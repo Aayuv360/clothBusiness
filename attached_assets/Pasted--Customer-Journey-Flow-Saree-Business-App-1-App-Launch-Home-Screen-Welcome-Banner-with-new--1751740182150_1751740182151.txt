@@ -1,0 +1,162 @@
+ Customer Journey Flow – Saree Business App
+🏠 1. App Launch / Home Screen
+Welcome Banner (with new arrivals / discounts)
+
+Categories:
+
+Silk Sarees
+
+Cotton Sarees
+
+Banarasi / Designer
+
+Wedding / Party wear
+
+Search Bar (with suggestions)
+
+Navigation Menu:
+
+Home | Categories | Wishlist | Cart | Account
+
+🔍 2. Browse or Search Products
+Category Page
+
+Grid/list of sarees
+
+Filters:
+
+Price Range
+
+Fabric (Silk, Cotton, Chiffon)
+
+Color
+
+Brand
+
+Availability
+
+Sorting:
+
+Newest
+
+Price (Low to High / High to Low)
+
+Popularity
+
+👘 3. View Product Details
+When the user clicks on a saree:
+
+Large high-quality images (multiple angles)
+
+Zoom or swipe gallery
+
+Name + Price
+
+Fabric, Size, Color, Washing instructions
+
+Estimated delivery time
+
+Add to Wishlist / Add to Cart
+
+Product Reviews (stars + comments)
+
+“Frequently Bought Together” suggestions
+
+🛒 4. Add to Cart / Wishlist
+Users can save favorite items in the wishlist
+
+When added to cart, they see:
+
+Product name, image, qty, price
+
+Option to remove or change quantity
+
+Subtotal, shipping cost
+
+Apply discount/coupon code
+
+👤 5. Login or Sign Up
+Continue as guest or:
+
+Mobile Number + OTP
+
+Or Email + Password
+
+Option to save address, orders, wishlist
+
+🚚 6. Shipping Address
+Add new address or select saved one
+
+Name, phone number, pincode, city, state
+
+Option: Home / Office
+
+Check if Cash on Delivery is available
+
+💳 7. Payment
+Choose payment method:
+
+UPI (GPay, PhonePe, Paytm)
+
+Debit/Credit Card
+
+Net Banking
+
+Cash on Delivery
+
+Show total cost (with taxes and shipping)
+
+“Place Order” button
+
+✅ 8. Order Confirmation
+“Thank you” screen with:
+
+Order ID
+
+Estimated delivery date
+
+View Order button
+
+📦 9. Order Tracking
+Status updates:
+
+Order Received
+
+Packed
+
+Shipped
+
+Out for Delivery
+
+Delivered
+
+Track via external courier if needed (with link)
+
+📜 10. Order History
+All past orders with:
+
+Date
+
+Status
+
+Option to “Reorder” or “Return”
+
+💬 11. Customer Support
+Chat with support (auto or manual)
+
+FAQ: Returns, shipping, sizing
+
+Contact via WhatsApp, Email, Call
+
+🛍️ 12. Optional Features (To Add Later)
+Loyalty Points or Rewards
+
+Refer a Friend for discount
+
+Push Notifications
+
+Offers, discounts, cart reminders
+
+Live Chat Shopping
+
+Try-on with AR (if budget allows)
