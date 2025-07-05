@@ -109,7 +109,17 @@ The application uses a comprehensive database schema with the following main ent
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+### July 05, 2025 - Razorpay Payment Integration
+- Successfully integrated Razorpay payment gateway for secure online transactions
+- Added backend API routes for order creation and payment verification
+- Updated checkout page with Razorpay payment option as the primary choice
+- Implemented secure payment flow with proper signature verification
+- Added COD (Cash on Delivery) as alternative payment method
+- Enhanced user experience with payment status notifications and error handling
+
 ## Changelog
 
 Changelog:
-- July 05, 2025. Initial setup
+- July 05, 2025. Initial setup and Razorpay payment integration completed

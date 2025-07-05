@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'wouter';
-import { CreditCard, Truck, MapPin, Phone, Check, ArrowLeft } from 'lucide-react';
+import { CreditCard, Truck, MapPin, Phone, Check, ArrowLeft, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -36,7 +36,7 @@ export default function Checkout() {
     type: 'home'
   });
 
-  const [paymentMethod, setPaymentMethod] = useState('upi');
+  const [paymentMethod, setPaymentMethod] = useState('razorpay');
   const [paymentDetails, setPaymentDetails] = useState({
     upiId: '',
     cardNumber: '',
@@ -87,39 +87,162 @@ export default function Checkout() {
 
   const handlePaymentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (paymentMethod === 'upi' && !paymentDetails.upiId) {
-      toast({
-        title: "Missing UPI ID",
-        description: "Please enter your UPI ID.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (paymentMethod === 'card' && (!paymentDetails.cardNumber || !paymentDetails.expiryDate || 
-        !paymentDetails.cvv || !paymentDetails.cardholderName)) {
-      toast({
-        title: "Missing Card Details",
-        description: "Please fill in all card information.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setCurrentStep(3);
   };
 
   const handlePlaceOrder = async () => {
+    if (paymentMethod === 'razorpay') {
+      handleRazorpayPayment();
+    } else {
+      handleDirectOrder();
+    }
+  };
+
+  const handleRazorpayPayment = async () => {
     setIsProcessing(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Clear cart and redirect to success
-      await clearCart(user!.id);
-      
+      // Create order on backend
+      const orderResponse = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: finalTotal * 100, // Razorpay expects amount in paise
+          currency: 'INR',
+          userId: user!.id,
+          cartItems: cartItems,
+          shippingAddress: shippingAddress
+        }),
+      });
+
+      if (!orderResponse.ok) {
+        throw new Error('Failed to create order');
+      }
+
+      const orderData = await orderResponse.json();
+
+      // Initialize Razorpay
+      const options = {
+        key: 'rzp_test_9WdKDVR2EUhGfq', // Test key - replace with actual key
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'Saree Store',
+        description: 'Payment for Saree Order',
+        order_id: orderData.id,
+        handler: async function (response: any) {
+          try {
+            // Verify payment on backend
+            const verifyResponse = await fetch('/api/payment/verify', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                userId: user!.id,
+                cartItems: cartItems,
+                shippingAddress: shippingAddress
+              }),
+            });
+
+            if (!verifyResponse.ok) {
+              throw new Error('Payment verification failed');
+            }
+
+            const result = await verifyResponse.json();
+            
+            toast({
+              title: "Payment Successful!",
+              description: "Your order has been placed successfully.",
+            });
+            
+            setLocation('/orders');
+          } catch (error) {
+            toast({
+              title: "Payment Verification Failed",
+              description: "Please contact support if money was deducted.",
+              variant: "destructive"
+            });
+          }
+        },
+        prefill: {
+          name: shippingAddress.name,
+          email: shippingAddress.email,
+          contact: shippingAddress.phone,
+        },
+        theme: {
+          color: '#F59E0B', // Golden color
+        },
+        modal: {
+          ondismiss: function() {
+            setIsProcessing(false);
+            toast({
+              title: "Payment Cancelled",
+              description: "You can retry payment anytime.",
+              variant: "destructive"
+            });
+          }
+        }
+      };
+
+      // Load Razorpay script if not already loaded
+      if (!(window as any).Razorpay) {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => {
+          const razorpay = new (window as any).Razorpay(options);
+          razorpay.open();
+        };
+        document.body.appendChild(script);
+      } else {
+        const razorpay = new (window as any).Razorpay(options);
+        razorpay.open();
+      }
+    } catch (error) {
+      toast({
+        title: "Payment Failed",
+        description: "Unable to initiate payment. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDirectOrder = async () => {
+    setIsProcessing(true);
+    
+    try {
+      // Create order directly (for COD, etc.)
+      const orderResponse = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user!.id,
+          total: finalTotal.toString(),
+          shippingCost: shippingCost.toString(),
+          paymentMethod: paymentMethod,
+          paymentStatus: paymentMethod === 'cod' ? 'pending' : 'completed',
+          status: 'pending',
+          shippingAddress: shippingAddress,
+          items: cartItems.map((item: any) => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+            price: item.product.price
+          }))
+        }),
+      });
+
+      if (!orderResponse.ok) {
+        throw new Error('Failed to create order');
+      }
+
       toast({
         title: "Order Placed Successfully!",
         description: "Your order has been confirmed. You will receive a confirmation email shortly.",
@@ -329,22 +452,40 @@ export default function Checkout() {
                 <CardContent>
                   <form onSubmit={handlePaymentSubmit} className="space-y-6">
                     <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                      {/* UPI Payment */}
+                      {/* Razorpay Payment */}
+                      <div className="border rounded-lg p-4 border-golden bg-golden/5">
+                        <div className="flex items-center space-x-2 mb-3">
+                          <RadioGroupItem value="razorpay" id="razorpay" />
+                          <Label htmlFor="razorpay" className="font-medium flex items-center">
+                            <Wallet className="h-4 w-4 mr-2" />
+                            Secure Online Payment (Recommended)
+                          </Label>
+                        </div>
+                        {paymentMethod === 'razorpay' && (
+                          <div className="mt-3 p-3 bg-white rounded-md">
+                            <p className="text-sm text-gray-600 mb-2">
+                              Pay securely using UPI, Net Banking, Credit/Debit Cards, or Wallets
+                            </p>
+                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              <span>✓ 256-bit SSL Encryption</span>
+                              <span>✓ PCI DSS Compliant</span>
+                              <span>✓ Instant Payment</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Cash on Delivery */}
                       <div className="border rounded-lg p-4">
                         <div className="flex items-center space-x-2 mb-3">
-                          <RadioGroupItem value="upi" id="upi" />
-                          <Label htmlFor="upi" className="font-medium">UPI Payment</Label>
+                          <RadioGroupItem value="cod" id="cod" />
+                          <Label htmlFor="cod" className="font-medium">Cash on Delivery</Label>
                         </div>
-                        {paymentMethod === 'upi' && (
-                          <div>
-                            <Label htmlFor="upiId">UPI ID</Label>
-                            <Input
-                              id="upiId"
-                              value={paymentDetails.upiId}
-                              onChange={(e) => setPaymentDetails(prev => ({ ...prev, upiId: e.target.value }))}
-                              placeholder="yourname@upi"
-                              className="mt-2"
-                            />
+                        {paymentMethod === 'cod' && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                            <p className="text-sm text-gray-600">
+                              Pay when your order is delivered. Additional ₹40 COD charges apply.
+                            </p>
                           </div>
                         )}
                       </div>

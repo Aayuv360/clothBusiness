@@ -2,6 +2,14 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { getStorage } from "./storage";
 import { insertUserSchema, insertProductSchema, insertAddressSchema, insertCartSchema, insertWishlistSchema, insertOrderSchema, insertReviewSchema } from "@shared/schema";
+import Razorpay from "razorpay";
+import crypto from "crypto";
+
+// Initialize Razorpay
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_9WdKDVR2EUhGfq',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_secret_for_test'
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
@@ -265,6 +273,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(review);
     } catch (error) {
       res.status(400).json({ message: "Failed to create review" });
+    }
+  });
+
+  // Payment routes
+  app.post("/api/payment/create-order", async (req, res) => {
+    try {
+      const { amount, currency = 'INR' } = req.body;
+      
+      const options = {
+        amount: amount, // amount in smallest currency unit
+        currency: currency,
+        receipt: `receipt_${Date.now()}`,
+        payment_capture: 1
+      };
+
+      const order = await razorpay.orders.create(options);
+      res.json(order);
+    } catch (error) {
+      console.error('Error creating Razorpay order:', error);
+      res.status(500).json({ message: "Failed to create payment order" });
+    }
+  });
+
+  app.post("/api/payment/verify", async (req, res) => {
+    try {
+      const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        userId,
+        cartItems,
+        shippingAddress
+      } = req.body;
+
+      const body = razorpay_order_id + "|" + razorpay_payment_id;
+      const expectedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || 'dummy_secret_for_test')
+        .update(body.toString())
+        .digest("hex");
+
+      const isAuthentic = expectedSignature === razorpay_signature;
+
+      if (isAuthentic) {
+        // Payment is verified, create order in database
+        const orderNumber = `ORD-${Date.now()}`;
+        const total = cartItems.reduce((sum: number, item: any) => 
+          sum + (parseFloat(item.product.price) * item.quantity), 0
+        );
+        const shippingCost = total >= 999 ? 0 : 99;
+        const taxAmount = Math.round(total * 0.05);
+        const finalTotal = total + shippingCost + taxAmount;
+
+        const orderData = {
+          userId: userId,
+          orderNumber: orderNumber,
+          total: finalTotal.toString(),
+          shippingCost: shippingCost.toString(),
+          paymentMethod: 'razorpay',
+          paymentStatus: 'completed',
+          status: 'confirmed',
+          shippingAddress: shippingAddress,
+          estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+        };
+
+        const orderItems = cartItems.map((item: any) => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+          price: item.product.price
+        }));
+
+        const order = await getStorage().createOrder(orderData, orderItems);
+        
+        // Clear user's cart
+        await getStorage().clearCart(userId);
+
+        res.json({
+          success: true,
+          orderId: order.id,
+          message: "Payment verified and order created successfully"
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "Payment verification failed"
+        });
+      }
+    } catch (error) {
+      console.error('Error verifying payment:', error);
+      res.status(500).json({ 
+        success: false,
+        message: "Payment verification failed" 
+      });
     }
   });
 
