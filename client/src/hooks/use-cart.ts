@@ -19,7 +19,7 @@ export function useCart() {
   });
 
   const addToCartMutation = useMutation({
-    mutationFn: async ({ productId, quantity = 1 }: { productId: number; quantity?: number }) => {
+    mutationFn: async ({ productId, quantity = 1 }: { productId: string; quantity?: number }) => {
       if (!user?.id) throw new Error('User not authenticated');
       const response = await apiRequest('POST', '/api/cart', {
         userId: user.id,
