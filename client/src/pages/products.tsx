@@ -125,12 +125,12 @@ export default function Products() {
       {/* Category */}
       <div>
         <Label>Category</Label>
-        <Select value={filters.categoryId?.toString() || ''} onValueChange={(value) => handleFilterChange('categoryId', value ? parseInt(value) : undefined)}>
+        <Select value={filters.categoryId?.toString() || 'all'} onValueChange={(value) => handleFilterChange('categoryId', value === 'all' ? undefined : parseInt(value))}>
           <SelectTrigger className="mt-2">
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value="all">All Categories</SelectItem>
             {categories.map((category: Category) => (
               <SelectItem key={category.id} value={category.id.toString()}>
                 {category.name}
