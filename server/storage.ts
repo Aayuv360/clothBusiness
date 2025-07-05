@@ -3,8 +3,8 @@ import { FallbackStorage } from "./fallback-storage";
 import type { IStorage } from "./mongodb";
 import mongoose from "mongoose";
 
-// Use fallback storage when MongoDB is not connected
-const createStorage = (): IStorage => {
+// Create a storage factory that returns the appropriate storage based on MongoDB connection
+export const getStorage = (): IStorage => {
   if (mongoose.connection.readyState === 1) {
     console.log('Using MongoDB storage');
     return mongoStorage;
@@ -14,4 +14,4 @@ const createStorage = (): IStorage => {
   }
 };
 
-export const storage: IStorage = createStorage();
+export const storage: IStorage = getStorage();

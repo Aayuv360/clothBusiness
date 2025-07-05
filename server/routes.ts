@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { getStorage } from "./storage";
 import { insertUserSchema, insertProductSchema, insertAddressSchema, insertCartSchema, insertWishlistSchema, insertOrderSchema, insertReviewSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -8,11 +8,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/register", async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
-      const existingUser = await storage.getUserByEmail(userData.email);
+      const existingUser = await getStorage().getUserByEmail(userData.email);
       if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
-      const user = await storage.createUser(userData);
+      const user = await getStorage().createUser(userData);
       const { password, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
@@ -23,7 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;
-      const user = await storage.getUserByEmail(email);
+      const user = await getStorage().getUserByEmail(email);
       if (!user || user.password !== password) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
@@ -37,7 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Categories routes
   app.get("/api/categories", async (req, res) => {
     try {
-      const categories = await storage.getCategories();
+      const categories = await getStorage().getCategories();
       res.json(categories);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch categories" });
@@ -46,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/categories/:slug", async (req, res) => {
     try {
-      const category = await storage.getCategoryBySlug(req.params.slug);
+      const category = await getStorage().getCategoryBySlug(req.params.slug);
       if (!category) {
         return res.status(404).json({ message: "Category not found" });
       }
@@ -67,7 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         color: req.query.color as string,
         search: req.query.search as string
       };
-      const products = await storage.getProducts(filters);
+      const products = await getStorage().getProducts(filters);
       res.json(products);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch products" });
@@ -76,7 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/products/featured", async (req, res) => {
     try {
-      const products = await storage.getFeaturedProducts();
+      const products = await getStorage().getFeaturedProducts();
       res.json(products);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch featured products" });
@@ -85,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/products/:id", async (req, res) => {
     try {
-      const product = await storage.getProduct(req.params.id);
+      const product = await getStorage().getProduct(req.params.id);
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
@@ -101,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!query) {
         return res.status(400).json({ message: "Search query required" });
       }
-      const products = await storage.searchProducts(query);
+      const products = await getStorage().searchProducts(query);
       res.json(products);
     } catch (error) {
       res.status(500).json({ message: "Search failed" });
@@ -112,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/cart/:userId", async (req, res) => {
     try {
       const userId = req.params.userId;
-      const cartItems = await storage.getCartItems(userId);
+      const cartItems = await getStorage().getCartItems(userId);
       res.json(cartItems);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch cart items" });
@@ -122,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/cart", async (req, res) => {
     try {
       const cartData = insertCartSchema.parse(req.body);
-      const cartItem = await storage.addToCart(cartData);
+      const cartItem = await getStorage().addToCart(cartData);
       res.json(cartItem);
     } catch (error) {
       res.status(400).json({ message: "Failed to add to cart" });
@@ -133,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = req.params.id;
       const { quantity } = req.body;
-      const cartItem = await storage.updateCartItem(id, quantity);
+      const cartItem = await getStorage().updateCartItem(id, quantity);
       if (!cartItem) {
         return res.status(404).json({ message: "Cart item not found" });
       }
@@ -146,7 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/cart/:id", async (req, res) => {
     try {
       const id = req.params.id;
-      const success = await storage.removeFromCart(id);
+      const success = await getStorage().removeFromCart(id);
       if (!success) {
         return res.status(404).json({ message: "Cart item not found" });
       }
@@ -160,7 +160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wishlist/:userId", async (req, res) => {
     try {
       const userId = req.params.userId;
-      const wishlistItems = await storage.getWishlistItems(userId);
+      const wishlistItems = await getStorage().getWishlistItems(userId);
       res.json(wishlistItems);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch wishlist items" });
@@ -170,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/wishlist", async (req, res) => {
     try {
       const wishlistData = insertWishlistSchema.parse(req.body);
-      const wishlistItem = await storage.addToWishlist(wishlistData);
+      const wishlistItem = await getStorage().addToWishlist(wishlistData);
       res.json(wishlistItem);
     } catch (error) {
       res.status(400).json({ message: "Failed to add to wishlist" });
@@ -180,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/wishlist/:id", async (req, res) => {
     try {
       const id = req.params.id;
-      const success = await storage.removeFromWishlist(id);
+      const success = await getStorage().removeFromWishlist(id);
       if (!success) {
         return res.status(404).json({ message: "Wishlist item not found" });
       }
@@ -194,7 +194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/addresses/:userId", async (req, res) => {
     try {
       const userId = req.params.userId;
-      const addresses = await storage.getUserAddresses(userId);
+      const addresses = await getStorage().getUserAddresses(userId);
       res.json(addresses);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch addresses" });
@@ -204,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/addresses", async (req, res) => {
     try {
       const addressData = insertAddressSchema.parse(req.body);
-      const address = await storage.createAddress(addressData);
+      const address = await getStorage().createAddress(addressData);
       res.json(address);
     } catch (error) {
       res.status(400).json({ message: "Failed to create address" });
@@ -215,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/orders/:userId", async (req, res) => {
     try {
       const userId = req.params.userId;
-      const orders = await storage.getOrders(userId);
+      const orders = await getStorage().getOrders(userId);
       res.json(orders);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch orders" });
@@ -225,7 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/orders/detail/:id", async (req, res) => {
     try {
       const id = req.params.id;
-      const order = await storage.getOrder(id);
+      const order = await getStorage().getOrder(id);
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
@@ -240,7 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { order, items } = req.body;
       const orderData = insertOrderSchema.parse(order);
       const orderNumber = `ORD${Date.now()}`;
-      const newOrder = await storage.createOrder({ ...orderData, orderNumber }, items);
+      const newOrder = await getStorage().createOrder({ ...orderData, orderNumber }, items);
       res.json(newOrder);
     } catch (error) {
       res.status(400).json({ message: "Failed to create order" });
@@ -251,7 +251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/reviews/:productId", async (req, res) => {
     try {
       const productId = req.params.productId;
-      const reviews = await storage.getProductReviews(productId);
+      const reviews = await getStorage().getProductReviews(productId);
       res.json(reviews);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch reviews" });
@@ -261,7 +261,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/reviews", async (req, res) => {
     try {
       const reviewData = insertReviewSchema.parse(req.body);
-      const review = await storage.createReview(reviewData);
+      const review = await getStorage().createReview(reviewData);
       res.json(review);
     } catch (error) {
       res.status(400).json({ message: "Failed to create review" });

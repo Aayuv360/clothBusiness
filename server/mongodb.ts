@@ -99,7 +99,8 @@ export interface IStorage {
 
 export class MongoStorage implements IStorage {
   constructor() {
-    this.seedData();
+    // Don't seed immediately, wait for connection
+    setTimeout(() => this.seedData(), 1000);
   }
 
   private async seedData() {

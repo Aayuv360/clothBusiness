@@ -41,6 +41,10 @@ app.use((req, res, next) => {
   // Connect to MongoDB
   await connectDB();
   
+  // Initialize MongoDB storage with seeding after connection
+  const { MongoStorage } = await import("./mongodb");
+  new MongoStorage();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

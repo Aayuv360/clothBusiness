@@ -18,9 +18,9 @@ This is a full-stack e-commerce application built for selling sarees online. The
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js
 - **Language**: TypeScript with ES modules
-- **Database**: PostgreSQL with Drizzle ORM
-- **Database Provider**: Neon Database (@neondatabase/serverless)
-- **Session Management**: PostgreSQL-based sessions with connect-pg-simple
+- **Database**: MongoDB with Mongoose ODM
+- **Database Provider**: MongoDB Atlas (cluster0.fs4vkd7.mongodb.net)
+- **Session Management**: In-memory sessions with fallback storage
 - **API Design**: RESTful API with JSON responses
 
 ### Key Components
