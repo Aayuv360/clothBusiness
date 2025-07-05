@@ -13,15 +13,21 @@ import type {
   InsertCartItem, InsertWishlistItem, InsertOrder, InsertOrderItem, InsertReview
 } from '@shared/schema';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/saree-ecommerce';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://sathishreddyk0337:MmNdrMQ7lWp0I5m1@cluster0.fs4vkd7.mongodb.net/clothbusiness';
 
 export async function connectDB() {
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB');
+    console.log('Attempting to connect to MongoDB...');
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds
+      bufferCommands: false // Disable mongoose buffering
+    });
+    console.log('Connected to MongoDB successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error);
-    process.exit(1);
+    console.log('Continuing without database connection - using fallback');
+    return; // Don't exit, continue with fallback
   }
 }
 
@@ -98,6 +104,12 @@ export class MongoStorage implements IStorage {
 
   private async seedData() {
     try {
+      // Check if we're connected to MongoDB
+      if (mongoose.connection.readyState !== 1) {
+        console.log('MongoDB not connected, skipping seed data');
+        return;
+      }
+
       // Check if data already exists
       const categoryCount = await Category.countDocuments();
       if (categoryCount > 0) return;

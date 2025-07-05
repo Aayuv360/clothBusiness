@@ -60,7 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products", async (req, res) => {
     try {
       const filters = {
-        categoryId: req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined,
+        categoryId: req.query.categoryId as string,
         minPrice: req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined,
         maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined,
         fabric: req.query.fabric as string,
@@ -85,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/products/:id", async (req, res) => {
     try {
-      const product = await storage.getProduct(parseInt(req.params.id));
+      const product = await storage.getProduct(req.params.id);
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
@@ -111,7 +111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cart routes
   app.get("/api/cart/:userId", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const cartItems = await storage.getCartItems(userId);
       res.json(cartItems);
     } catch (error) {
@@ -131,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/cart/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const { quantity } = req.body;
       const cartItem = await storage.updateCartItem(id, quantity);
       if (!cartItem) {
@@ -145,7 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/cart/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const success = await storage.removeFromCart(id);
       if (!success) {
         return res.status(404).json({ message: "Cart item not found" });
@@ -159,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Wishlist routes
   app.get("/api/wishlist/:userId", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const wishlistItems = await storage.getWishlistItems(userId);
       res.json(wishlistItems);
     } catch (error) {
@@ -179,7 +179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/wishlist/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const success = await storage.removeFromWishlist(id);
       if (!success) {
         return res.status(404).json({ message: "Wishlist item not found" });
@@ -193,7 +193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Addresses routes
   app.get("/api/addresses/:userId", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const addresses = await storage.getUserAddresses(userId);
       res.json(addresses);
     } catch (error) {
@@ -214,7 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Orders routes
   app.get("/api/orders/:userId", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = req.params.userId;
       const orders = await storage.getOrders(userId);
       res.json(orders);
     } catch (error) {
@@ -224,7 +224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/orders/detail/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const order = await storage.getOrder(id);
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
@@ -250,7 +250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Reviews routes
   app.get("/api/reviews/:productId", async (req, res) => {
     try {
-      const productId = parseInt(req.params.productId);
+      const productId = req.params.productId;
       const reviews = await storage.getProductReviews(productId);
       res.json(reviews);
     } catch (error) {
