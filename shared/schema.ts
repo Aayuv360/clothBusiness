@@ -1,165 +1,197 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp, json } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  phone: text("phone"),
-  isVerified: boolean("is_verified").default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+// MongoDB type definitions based on Mongoose models
+export interface User {
+  _id: string;
+  username: string;
+  email: string;
+  password: string;
+  phone?: string;
+  isVerified: boolean;
+  createdAt: Date;
+}
+
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+}
+
+export interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  price: string;
+  originalPrice?: string;
+  categoryId: string;
+  fabric: string;
+  color: string;
+  length?: string;
+  blouseLength?: string;
+  occasion: string;
+  brand?: string;
+  images: string[];
+  inStock: number;
+  rating: string;
+  reviewCount: number;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+export interface Address {
+  _id: string;
+  userId: string;
+  name: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  type: string;
+  isDefault: boolean;
+}
+
+export interface CartItem {
+  _id: string;
+  userId: string;
+  productId: string;
+  quantity: number;
+  createdAt: Date;
+}
+
+export interface WishlistItem {
+  _id: string;
+  userId: string;
+  productId: string;
+  createdAt: Date;
+}
+
+export interface Order {
+  _id: string;
+  userId: string;
+  orderNumber: string;
+  total: string;
+  shippingCost?: string;
+  paymentMethod: string;
+  paymentStatus: string;
+  status: string;
+  shippingAddress: any;
+  estimatedDelivery?: Date;
+  createdAt: Date;
+}
+
+export interface OrderItem {
+  _id: string;
+  orderId: string;
+  productId: string;
+  quantity: number;
+  price: string;
+  createdAt: Date;
+}
+
+export interface Review {
+  _id: string;
+  userId: string;
+  productId: string;
+  rating: number;
+  comment?: string;
+  createdAt: Date;
+}
+
+// Insert schemas using Zod
+export const insertUserSchema = z.object({
+  username: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(6),
+  phone: z.string().optional(),
 });
 
-export const categories = pgTable("categories", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
-  description: text("description"),
-  image: text("image"),
+export const insertCategorySchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  description: z.string().optional(),
+  image: z.string().optional(),
 });
 
-export const products = pgTable("products", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
-  categoryId: integer("category_id").references(() => categories.id),
-  fabric: text("fabric").notNull(),
-  color: text("color").notNull(),
-  length: text("length").default("5.5 meters"),
-  blouseLength: text("blouse_length").default("0.8 meters"),
-  occasion: text("occasion"),
-  brand: text("brand"),
-  images: json("images").$type<string[]>().notNull(),
-  inStock: integer("in_stock").default(0),
-  rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),
-  reviewCount: integer("review_count").default(0),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+export const insertProductSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().min(1),
+  price: z.string().min(1),
+  originalPrice: z.string().optional(),
+  categoryId: z.string().min(1),
+  fabric: z.string().min(1),
+  color: z.string().min(1),
+  length: z.string().optional(),
+  blouseLength: z.string().optional(),
+  occasion: z.string().min(1),
+  brand: z.string().optional(),
+  images: z.array(z.string()),
+  inStock: z.number().default(0),
+  rating: z.string().default("0"),
+  reviewCount: z.number().default(0),
+  isActive: z.boolean().default(true),
 });
 
-export const addresses = pgTable("addresses", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  name: text("name").notNull(),
-  phone: text("phone").notNull(),
-  addressLine1: text("address_line1").notNull(),
-  addressLine2: text("address_line2"),
-  city: text("city").notNull(),
-  state: text("state").notNull(),
-  pincode: text("pincode").notNull(),
-  type: text("type").default("home"), // home, office
-  isDefault: boolean("is_default").default(false),
+export const insertAddressSchema = z.object({
+  userId: z.string().min(1),
+  name: z.string().min(1),
+  phone: z.string().min(1),
+  addressLine1: z.string().min(1),
+  addressLine2: z.string().optional(),
+  city: z.string().min(1),
+  state: z.string().min(1),
+  pincode: z.string().min(1),
+  type: z.string().default("home"),
+  isDefault: z.boolean().default(false),
 });
 
-export const cart = pgTable("cart", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  productId: integer("product_id").references(() => products.id).notNull(),
-  quantity: integer("quantity").default(1),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+export const insertCartSchema = z.object({
+  userId: z.string().min(1),
+  productId: z.string().min(1),
+  quantity: z.number().default(1),
 });
 
-export const wishlist = pgTable("wishlist", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  productId: integer("product_id").references(() => products.id).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+export const insertWishlistSchema = z.object({
+  userId: z.string().min(1),
+  productId: z.string().min(1),
 });
 
-export const orders = pgTable("orders", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  orderNumber: text("order_number").notNull().unique(),
-  status: text("status").default("pending"), // pending, confirmed, packed, shipped, delivered, cancelled
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
-  shippingCost: decimal("shipping_cost", { precision: 10, scale: 2 }).default("0"),
-  paymentMethod: text("payment_method").notNull(),
-  paymentStatus: text("payment_status").default("pending"),
-  shippingAddress: json("shipping_address").notNull(),
-  estimatedDelivery: timestamp("estimated_delivery"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+export const insertOrderSchema = z.object({
+  userId: z.string().min(1),
+  orderNumber: z.string().min(1),
+  total: z.string().min(1),
+  shippingCost: z.string().optional(),
+  paymentMethod: z.string().min(1),
+  paymentStatus: z.string().default("pending"),
+  status: z.string().default("pending"),
+  shippingAddress: z.any(),
+  estimatedDelivery: z.date().optional(),
 });
 
-export const orderItems = pgTable("order_items", {
-  id: serial("id").primaryKey(),
-  orderId: integer("order_id").references(() => orders.id).notNull(),
-  productId: integer("product_id").references(() => products.id).notNull(),
-  quantity: integer("quantity").notNull(),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+export const insertOrderItemSchema = z.object({
+  orderId: z.string().min(1),
+  productId: z.string().min(1),
+  quantity: z.number().min(1),
+  price: z.string().min(1),
 });
 
-export const reviews = pgTable("reviews", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  productId: integer("product_id").references(() => products.id).notNull(),
-  rating: integer("rating").notNull(),
-  comment: text("comment"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+export const insertReviewSchema = z.object({
+  userId: z.string().min(1),
+  productId: z.string().min(1),
+  rating: z.number().min(1).max(5),
+  comment: z.string().optional(),
 });
 
-// Insert schemas
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertCategorySchema = createInsertSchema(categories).omit({
-  id: true,
-});
-
-export const insertProductSchema = createInsertSchema(products).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertAddressSchema = createInsertSchema(addresses).omit({
-  id: true,
-});
-
-export const insertCartSchema = createInsertSchema(cart).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertWishlistSchema = createInsertSchema(wishlist).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertOrderSchema = createInsertSchema(orders).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
-  id: true,
-});
-
-export const insertReviewSchema = createInsertSchema(reviews).omit({
-  id: true,
-  createdAt: true,
-});
-
-// Types
-export type User = typeof users.$inferSelect;
+// Insert types
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type Category = typeof categories.$inferSelect;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
-export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
-export type Address = typeof addresses.$inferSelect;
 export type InsertAddress = z.infer<typeof insertAddressSchema>;
-export type CartItem = typeof cart.$inferSelect;
 export type InsertCartItem = z.infer<typeof insertCartSchema>;
-export type WishlistItem = typeof wishlist.$inferSelect;
 export type InsertWishlistItem = z.infer<typeof insertWishlistSchema>;
-export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
-export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
-export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
