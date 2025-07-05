@@ -15,6 +15,12 @@ export function useCart() {
 
   const { data: cartItems = [], isLoading } = useQuery({
     queryKey: ['/api/cart', user?.id],
+    queryFn: async () => {
+      if (!user?.id) throw new Error('User not authenticated');
+      const response = await fetch(`/api/cart/${user.id}`);
+      if (!response.ok) throw new Error('Failed to fetch cart');
+      return response.json();
+    },
     enabled: !!user?.id,
   });
 

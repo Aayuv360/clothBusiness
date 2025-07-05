@@ -117,6 +117,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cart routes
+  app.get("/api/cart", async (req, res) => {
+    try {
+      const userId = req.query.userId as string;
+      if (!userId) {
+        return res.status(400).json({ message: "userId parameter required" });
+      }
+      const cartItems = await getStorage().getCartItems(userId);
+      res.json(cartItems);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch cart items" });
+    }
+  });
+
   app.get("/api/cart/:userId", async (req, res) => {
     try {
       const userId = req.params.userId;
