@@ -140,13 +140,13 @@ export default function ProductDetail() {
           <div>
             <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
               <img
-                src={product.images[selectedImageIndex]}
+                src={product.images?.[selectedImageIndex] || product.images?.[0] || '/placeholder-image.jpg'}
                 alt={product.name}
                 className="w-full h-96 object-cover rounded-lg"
               />
             </div>
             
-            {product.images.length > 1 && (
+            {product.images && product.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {product.images.map((image, index) => (
                   <button
