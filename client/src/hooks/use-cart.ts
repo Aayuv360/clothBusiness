@@ -45,7 +45,7 @@ export function useCart() {
   });
 
   const updateQuantityMutation = useMutation({
-    mutationFn: async ({ id, quantity }: { id: number; quantity: number }) => {
+    mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
       const response = await apiRequest('PATCH', `/api/cart/${id}`, { quantity });
       return response.json();
     },
@@ -62,7 +62,7 @@ export function useCart() {
   });
 
   const removeFromCartMutation = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const response = await apiRequest('DELETE', `/api/cart/${id}`);
       return response.json();
     },
@@ -82,7 +82,28 @@ export function useCart() {
     }
   });
 
-  const addToCart = (productId: number, quantity?: number) => {
+  const clearCartMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await apiRequest('DELETE', `/api/cart/clear/${userId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/cart', user?.id] });
+      toast({
+        title: "Cart cleared",
+        description: "All items have been removed from your cart.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Failed to clear cart",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const addToCart = (productId: string, quantity?: number) => {
     if (!user) {
       toast({
         title: "Please login",
@@ -94,7 +115,7 @@ export function useCart() {
     addToCartMutation.mutate({ productId, quantity });
   };
 
-  const updateQuantity = (id: number, quantity: number) => {
+  const updateQuantity = (id: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCartMutation.mutate(id);
     } else {
@@ -102,8 +123,12 @@ export function useCart() {
     }
   };
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: string) => {
     removeFromCartMutation.mutate(id);
+  };
+
+  const clearCart = (userId: string) => {
+    clearCartMutation.mutate(userId);
   };
 
   const openCart = () => setIsOpen(true);
@@ -126,6 +151,7 @@ export function useCart() {
     addToCart,
     updateQuantity,
     removeFromCart,
+    clearCart,
     openCart,
     closeCart,
     isAddingToCart: addToCartMutation.isPending,

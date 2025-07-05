@@ -164,6 +164,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/cart/clear/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const success = await getStorage().clearCart(userId);
+      if (!success) {
+        return res.status(404).json({ message: "Failed to clear cart" });
+      }
+      res.json({ message: "Cart cleared successfully" });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to clear cart" });
+    }
+  });
+
   // Wishlist routes
   app.get("/api/wishlist/:userId", async (req, res) => {
     try {
