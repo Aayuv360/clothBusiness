@@ -359,9 +359,12 @@ export class MongoStorage implements IStorage {
     
     return validCartItems.map(item => {
       const converted = convertDoc<CartItemType>(item);
+      const product = convertDoc<ProductType>(item.productId);
+      
       return {
         ...converted,
-        product: convertDoc<ProductType>(item.productId)
+        productId: product._id || product.id || '', // Ensure productId is a string
+        product: product
       };
     });
   }
