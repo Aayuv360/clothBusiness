@@ -141,7 +141,7 @@ export function useCart() {
   const closeCart = () => setIsOpen(false);
 
   const cartTotal = cartItems.reduce((total: number, item: CartItemWithProduct) => {
-    return total + (parseFloat(item.product.price) * item.quantity);
+    return total + (parseFloat(item.product.price || '0') * item.quantity);
   }, 0);
 
   const cartCount = cartItems.reduce((count: number, item: CartItemWithProduct) => {

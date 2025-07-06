@@ -18,6 +18,10 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
   const { addToCart, isAddingToCart } = useCart();
   const { isAuthenticated } = useAuth();
 
+  if (!product) {
+    return null;
+  }
+
   const discount = product.originalPrice 
     ? Math.round((1 - parseFloat(product.price) / parseFloat(product.originalPrice)) * 100)
     : 0;
@@ -25,7 +29,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product.id);
+    addToCart(product._id);
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
@@ -42,11 +46,11 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
 
   return (
     <Card className="product-card group cursor-pointer bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-      <Link href={`/product/${product.id}`}>
+      <Link href={`/product/${product._id}`}>
         <div className="relative">
           <img
-            src={product.images[0]}
-            alt={product.name}
+            src={product.images?.[0] || '/placeholder-image.jpg'}
+            alt={product.name || 'Product'}
             className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
           />
           
@@ -128,7 +132,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-lg font-bold text-charcoal">
-                ₹{product.price}
+                ₹{product.price || '0'}
               </span>
               {product.originalPrice && (
                 <span className="text-sm text-gray-500 line-through">

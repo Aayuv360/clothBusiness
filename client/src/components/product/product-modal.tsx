@@ -30,16 +30,16 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   if (!product) return null;
 
   const discount = product.originalPrice 
-    ? Math.round((1 - parseFloat(product.price) / parseFloat(product.originalPrice)) * 100)
+    ? Math.round((1 - parseFloat(product.price || '0') / parseFloat(product.originalPrice)) * 100)
     : 0;
 
   const handleAddToCart = () => {
-    addToCart(product.id, quantity);
+    addToCart(product._id, quantity);
     onClose();
   };
 
   const handleBuyNow = () => {
-    addToCart(product.id, quantity);
+    addToCart(product._id, quantity);
     // Navigate to checkout
     window.location.href = '/checkout';
   };
@@ -63,13 +63,13 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
             <div>
               <div className="main-image mb-4">
                 <img
-                  src={product.images[selectedImage]}
-                  alt={product.name}
+                  src={product.images?.[selectedImage] || '/placeholder-image.jpg'}
+                  alt={product.name || 'Product'}
                   className="w-full h-96 object-cover rounded-lg"
                 />
               </div>
               
-              {product.images.length > 1 && (
+              {(product.images?.length || 0) > 1 && (
                 <div className="grid grid-cols-4 gap-2">
                   {product.images.map((image, index) => (
                     <button
@@ -115,7 +115,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
               {/* Price */}
               <div className="mb-6">
-                <span className="text-3xl font-bold text-charcoal">₹{product.price}</span>
+                <span className="text-3xl font-bold text-charcoal">₹{product.price || '0'}</span>
                 {product.originalPrice && (
                   <>
                     <span className="text-xl text-gray-500 line-through ml-3">

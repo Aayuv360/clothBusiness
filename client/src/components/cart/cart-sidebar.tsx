@@ -63,8 +63,8 @@ export default function CartSidebar() {
               {cartItems.map((item) => (
                 <div key={item.id} className="flex items-center space-x-4 pb-4 border-b">
                   <img
-                    src={item.product.images[0]}
-                    alt={item.product.name}
+                    src={item.product.images?.[0] || '/placeholder-image.jpg'}
+                    alt={item.product.name || 'Product'}
                     className="w-16 h-16 object-cover rounded"
                   />
                   
@@ -102,7 +102,7 @@ export default function CartSidebar() {
                   
                   <div className="text-right">
                     <p className="font-semibold text-charcoal">
-                      ₹{(parseFloat(item.product.price) * item.quantity).toLocaleString()}
+                      ₹{(parseFloat(item.product.price || '0') * item.quantity).toLocaleString()}
                     </p>
                     <Button
                       variant="ghost"
