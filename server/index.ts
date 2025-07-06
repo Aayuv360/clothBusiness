@@ -2,12 +2,31 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
+import MongoStore from "connect-mongo";
 import { setupVite, serveStatic, log } from "./vite";
 import { connectDB } from "./mongodb";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Session configuration with MongoDB storage
+const MONGODB_URI = "mongodb+srv://sathishreddyk0337:MmNdrMQ7lWp0I5m1@cluster0.fs4vkd7.mongodb.net/clothbusiness";
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'fallback-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: MONGODB_URI,
+    collectionName: 'sessions'
+  }),
+  cookie: {
+    secure: false, // Set to true in production with HTTPS
+    httpOnly: true, // Prevents XSS attacks
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
+  }
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
