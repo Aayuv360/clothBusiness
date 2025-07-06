@@ -13,7 +13,7 @@ export function useCart() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const userId = user?._id || user?.id;
+  const userId = user?._id;
   const { data: cartItems = [], isLoading } = useQuery({
     queryKey: ["/api/cart", userId],
     queryFn: async () => {

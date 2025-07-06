@@ -312,7 +312,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/images/:imageId", async (req, res) => {
     try {
       const imageId = req.params.imageId;
-      console.log(`Image request for ID: ${imageId}`);
       
       // Map different image IDs to different saree images for demo purposes
       // In production, you would fetch actual images from GridFS, S3, or file system
@@ -328,7 +327,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const imageUrl = imageMap[imageId] || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&h=600&fit=crop';
-      console.log(`Proxying image: ${imageUrl}`);
       
       // Proxy the image from the external URL
       const fetch = (await import('node-fetch')).default;
@@ -347,7 +345,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Pipe the image data
       response.body?.pipe(res);
     } catch (error) {
-      console.error('Image serving error:', error);
       res.status(500).json({ message: "Failed to serve image" });
     }
   });
@@ -435,7 +432,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
 
         const orderItems = cartItems.map((item: any) => ({
-          productId: item.product.id,
+          productId: item.product._id,
           quantity: item.quantity,
           price: item.product.price
         }));
@@ -447,7 +444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         res.json({
           success: true,
-          orderId: order.id,
+          orderId: order._id,
           message: "Payment verified and order created successfully"
         });
       } else {

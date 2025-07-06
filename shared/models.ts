@@ -140,7 +140,7 @@ export interface IWishlistItem extends Document {
 
 const wishlistSchema = new Schema<IWishlistItem>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+  productId: { type: Schema.Types.ObjectId, ref: 'sm_products', required: true },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -186,7 +186,7 @@ export interface IOrderItem extends Document {
 
 const orderItemSchema = new Schema<IOrderItem>({
   orderId: { type: Schema.Types.ObjectId, ref: 'Order', required: true },
-  productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+  productId: { type: Schema.Types.ObjectId, ref: 'sm_products', required: true },
   quantity: { type: Number, required: true },
   price: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
@@ -205,7 +205,7 @@ export interface IReview extends Document {
 
 const reviewSchema = new Schema<IReview>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+  productId: { type: Schema.Types.ObjectId, ref: 'sm_products', required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
   comment: { type: String },
   createdAt: { type: Date, default: Date.now }

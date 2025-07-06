@@ -353,7 +353,11 @@ export class MongoStorage implements IStorage {
   // Cart methods
   async getCartItems(userId: string): Promise<(CartItemType & { product: ProductType })[]> {
     const cartItems = await CartItem.find({ userId }).populate('productId');
-    return cartItems.map(item => {
+    
+    // Filter out items where populate failed (broken references)
+    const validCartItems = cartItems.filter(item => item.productId !== null);
+    
+    return validCartItems.map(item => {
       const converted = convertDoc<CartItemType>(item);
       return {
         ...converted,
