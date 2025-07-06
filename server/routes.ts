@@ -162,21 +162,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cart routes
   app.get("/api/cart", async (req, res) => {
     try {
-      const userId = req.query.userId as string;
-      if (!userId) {
-        return res.status(400).json({ message: "userId parameter required" });
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
       }
-      const cartItems = await getStorage().getCartItems(userId);
-      res.json(cartItems);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch cart items" });
-    }
-  });
-
-  app.get("/api/cart/:userId", async (req, res) => {
-    try {
-      const userId = req.params.userId;
-      const cartItems = await getStorage().getCartItems(userId);
+      const cartItems = await getStorage().getCartItems(req.session.userId);
       res.json(cartItems);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch cart items" });
@@ -185,7 +174,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/cart", async (req, res) => {
     try {
-      const cartData = insertCartSchema.parse(req.body);
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const { productId, quantity } = req.body;
+      const cartData = insertCartSchema.parse({
+        userId: req.session.userId,
+        productId,
+        quantity
+      });
       const cartItem = await getStorage().addToCart(cartData);
       res.json(cartItem);
     } catch (error) {
@@ -220,10 +217,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/cart/clear/:userId", async (req, res) => {
+  app.delete("/api/cart/clear", async (req, res) => {
     try {
-      const userId = req.params.userId;
-      const success = await getStorage().clearCart(userId);
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const success = await getStorage().clearCart(req.session.userId);
       if (!success) {
         return res.status(404).json({ message: "Failed to clear cart" });
       }
@@ -234,10 +233,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Wishlist routes
-  app.get("/api/wishlist/:userId", async (req, res) => {
+  app.get("/api/wishlist", async (req, res) => {
     try {
-      const userId = req.params.userId;
-      const wishlistItems = await getStorage().getWishlistItems(userId);
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const wishlistItems = await getStorage().getWishlistItems(req.session.userId);
       res.json(wishlistItems);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch wishlist items" });
@@ -246,7 +247,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/wishlist", async (req, res) => {
     try {
-      const wishlistData = insertWishlistSchema.parse(req.body);
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const { productId } = req.body;
+      const wishlistData = insertWishlistSchema.parse({
+        userId: req.session.userId,
+        productId
+      });
       const wishlistItem = await getStorage().addToWishlist(wishlistData);
       res.json(wishlistItem);
     } catch (error) {

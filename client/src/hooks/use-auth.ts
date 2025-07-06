@@ -18,31 +18,26 @@ export function useAuth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for stored user data
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    // Check session-based authentication
+    const checkAuth = async () => {
       try {
-        const user = JSON.parse(storedUser);
+        const response = await apiRequest('GET', '/api/auth/me');
+        const user = await response.json();
         setAuthState({
           user,
           isLoading: false,
           isAuthenticated: true
         });
       } catch (error) {
-        localStorage.removeItem('user');
         setAuthState({
           user: null,
           isLoading: false,
           isAuthenticated: false
         });
       }
-    } else {
-      setAuthState({
-        user: null,
-        isLoading: false,
-        isAuthenticated: false
-      });
-    }
+    };
+    
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -51,7 +46,6 @@ export function useAuth() {
       const response = await apiRequest('POST', '/api/auth/login', { email, password });
       const user = await response.json();
       
-      localStorage.setItem('user', JSON.stringify(user));
       setAuthState({
         user,
         isLoading: false,
@@ -81,7 +75,6 @@ export function useAuth() {
       const response = await apiRequest('POST', '/api/auth/register', userData);
       const user = await response.json();
       
-      localStorage.setItem('user', JSON.stringify(user));
       setAuthState({
         user,
         isLoading: false,
@@ -105,18 +98,32 @@ export function useAuth() {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
-    setAuthState({
-      user: null,
-      isLoading: false,
-      isAuthenticated: false
-    });
-    
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
+  const logout = async () => {
+    try {
+      await apiRequest('POST', '/api/auth/logout');
+      setAuthState({
+        user: null,
+        isLoading: false,
+        isAuthenticated: false
+      });
+      
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+    } catch (error) {
+      // Even if logout API fails, clear local state
+      setAuthState({
+        user: null,
+        isLoading: false,
+        isAuthenticated: false
+      });
+      
+      toast({
+        title: "Logged out",
+        description: "You have been logged out.",
+      });
+    }
   };
 
   const sendOTP = async (phone: string) => {

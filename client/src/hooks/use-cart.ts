@@ -13,16 +13,14 @@ export function useCart() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const userId = user?._id;
   const { data: cartItems = [], isLoading } = useQuery({
-    queryKey: ["/api/cart", userId],
+    queryKey: ["/api/cart"],
     queryFn: async () => {
-      if (!userId) throw new Error("User not authenticated");
-      const response = await fetch(`/api/cart/${userId}`);
+      const response = await fetch(`/api/cart`);
       if (!response.ok) throw new Error("Failed to fetch cart");
       return response.json();
     },
-    enabled: !!userId,
+    enabled: !!user,
   });
 
   const addToCartMutation = useMutation({
@@ -33,16 +31,14 @@ export function useCart() {
       productId: string;
       quantity?: number;
     }) => {
-      if (!userId) throw new Error("User not authenticated");
       const response = await apiRequest("POST", "/api/cart", {
-        userId,
         productId,
         quantity,
       });
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cart", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
       toast({
         title: "Added to cart",
         description: "Item has been added to your cart.",
@@ -65,7 +61,7 @@ export function useCart() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cart", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
     },
     onError: () => {
       toast({
@@ -82,7 +78,7 @@ export function useCart() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cart", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
       toast({
         title: "Removed from cart",
         description: "Item has been removed from your cart.",
@@ -98,12 +94,12 @@ export function useCart() {
   });
 
   const clearCartMutation = useMutation({
-    mutationFn: async (userId: string) => {
-      const response = await apiRequest("DELETE", `/api/cart/clear/${userId}`);
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", `/api/cart/clear`);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cart", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
       toast({
         title: "Cart cleared",
         description: "All items have been removed from your cart.",
@@ -143,7 +139,7 @@ export function useCart() {
   };
 
   const clearCart = () => {
-    if (userId) clearCartMutation.mutate(userId);
+    if (user) clearCartMutation.mutate();
   };
 
   const openCart = () => setIsOpen(true);
