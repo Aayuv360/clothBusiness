@@ -124,7 +124,7 @@ export interface ICartItem extends Document {
 
 const cartSchema = new Schema<ICartItem>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+  productId: { type: Schema.Types.ObjectId, ref: 'sm_products', required: true },
   quantity: { type: Number, default: 1 },
   createdAt: { type: Date, default: Date.now }
 });
