@@ -29,7 +29,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product._id || product.id?.toString() || '');
+    addToCart(product.id || product._id || '');
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
@@ -46,7 +46,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
 
   return (
     <Card className="product-card group cursor-pointer bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-      <Link href={`/product/${product._id}`}>
+      <Link href={`/product/${product.id || product._id}`}>
         <div className="relative">
           <img
             src={product.imageUrl || product.images?.[0] || '/placeholder-image.jpg'}
