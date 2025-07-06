@@ -126,49 +126,73 @@ export class MongoStorage implements IStorage {
 
       const createdCategories = await Category.insertMany(categories);
 
-      // Seed products
+      // Seed products with sm_products schema
       const products = [
         {
           name: 'Royal Red Silk Saree',
+          sku: 'RSS001',
           description: 'Exquisite red silk saree with golden border, perfect for weddings and special occasions.',
+          category: 'silk',
           price: '15999',
-          originalPrice: '19999',
-          categoryId: createdCategories[0]._id,
+          costPrice: '12000',
+          stockQuantity: 25,
+          minStockLevel: 5,
           fabric: 'Pure Silk',
           color: 'Red',
-          length: '5.5 meters',
-          blouseLength: '0.8 meters',
-          occasion: 'Wedding',
-          brand: 'Royal Silks',
+          size: 'L',
+          sizes: ['S', 'M', 'L', 'XL'],
+          colors: ['Red', 'Maroon', 'Burgundy'],
           images: [
-            'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
-            'https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800'
+            '/api/images/royal-red-silk-1',
+            '/api/images/royal-red-silk-2'
           ],
-          inStock: 25,
-          rating: '4.8',
-          reviewCount: 45,
-          isActive: true
+          imageUrl: '/api/images/royal-red-silk-1',
+          isActive: true,
+          id: 482481
         },
         {
           name: 'Elegant Blue Cotton Saree',
+          sku: 'BCS002',
           description: 'Comfortable blue cotton saree with traditional prints, ideal for daily wear.',
+          category: 'cotton',
           price: '2499',
-          originalPrice: '3499',
-          categoryId: createdCategories[1]._id,
+          costPrice: '1800',
+          stockQuantity: 50,
+          minStockLevel: 10,
           fabric: 'Cotton',
           color: 'Blue',
-          length: '5.5 meters',
-          blouseLength: '0.8 meters',
-          occasion: 'Casual',
-          brand: 'Cotton Craft',
+          size: 'M',
+          sizes: ['S', 'M', 'L'],
+          colors: ['Blue', 'Navy', 'Sky Blue'],
           images: [
-            'https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=800',
-            'https://images.unsplash.com/photo-1588066892455-7b88c1dc9d6b?w=800'
+            '/api/images/blue-cotton-1',
+            '/api/images/blue-cotton-2'
           ],
-          inStock: 50,
-          rating: '4.5',
-          reviewCount: 32,
-          isActive: true
+          imageUrl: '/api/images/blue-cotton-1',
+          isActive: true,
+          id: 482482
+        },
+        {
+          name: 'Designer Golden Banarasi',
+          sku: 'DGB003',
+          description: 'Traditional Banarasi saree with intricate golden work, perfect for festivals.',
+          category: 'banarasi',
+          price: '8999',
+          costPrice: '6500',
+          stockQuantity: 15,
+          minStockLevel: 3,
+          fabric: 'Silk',
+          color: 'Golden',
+          size: 'L',
+          sizes: ['M', 'L', 'XL'],
+          colors: ['Golden', 'Silver', 'Bronze'],
+          images: [
+            '/api/images/golden-banarasi-1',
+            '/api/images/golden-banarasi-2'
+          ],
+          imageUrl: '/api/images/golden-banarasi-1',
+          isActive: true,
+          id: 482483
         }
       ];
 
@@ -228,17 +252,18 @@ export class MongoStorage implements IStorage {
     return convertDoc<CategoryType>(category);
   }
 
-  // Product methods
+  // Product methods  
   async getProducts(filters?: any): Promise<ProductType[]> {
     let query: any = { isActive: true };
 
-    if (filters?.categoryId) {
-      query.categoryId = filters.categoryId;
+    if (filters?.categoryId || filters?.category) {
+      query.category = filters.category || filters.categoryId;
     }
     if (filters?.search) {
       query.$or = [
         { name: { $regex: filters.search, $options: 'i' } },
-        { description: { $regex: filters.search, $options: 'i' } }
+        { description: { $regex: filters.search, $options: 'i' } },
+        { sku: { $regex: filters.search, $options: 'i' } }
       ];
     }
     if (filters?.fabric) {
@@ -246,6 +271,12 @@ export class MongoStorage implements IStorage {
     }
     if (filters?.color) {
       query.color = { $regex: filters.color, $options: 'i' };
+    }
+    if (filters?.minPrice) {
+      query.price = { $gte: filters.minPrice };
+    }
+    if (filters?.maxPrice) {
+      query.price = { ...query.price, $lte: filters.maxPrice };
     }
 
     const products = await Product.find(query);
@@ -258,7 +289,7 @@ export class MongoStorage implements IStorage {
   }
 
   async getProductsByCategory(categoryId: string): Promise<ProductType[]> {
-    const products = await Product.find({ categoryId, isActive: true });
+    const products = await Product.find({ category: categoryId, isActive: true });
     return products.map(product => convertDoc<ProductType>(product));
   }
 
@@ -271,7 +302,10 @@ export class MongoStorage implements IStorage {
     const products = await Product.find({
       $or: [
         { name: { $regex: query, $options: 'i' } },
-        { description: { $regex: query, $options: 'i' } }
+        { description: { $regex: query, $options: 'i' } },
+        { sku: { $regex: query, $options: 'i' } },
+        { fabric: { $regex: query, $options: 'i' } },
+        { color: { $regex: query, $options: 'i' } }
       ],
       isActive: true
     });

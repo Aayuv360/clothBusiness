@@ -22,14 +22,14 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
     return null;
   }
 
-  const discount = product.originalPrice 
-    ? Math.round((1 - parseFloat(product.price) / parseFloat(product.originalPrice)) * 100)
+  const discount = product.costPrice 
+    ? Math.round((1 - parseFloat(product.price) / parseFloat(product.costPrice)) * 100)
     : 0;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product._id);
+    addToCart(product._id || product.id?.toString() || '');
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
@@ -70,9 +70,9 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
 
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
-            {product.inStock && product.inStock < 5 && (
+            {product.stockQuantity && product.stockQuantity < 5 && (
               <Badge className="bg-orange-500 text-white">
-                Only {product.inStock} left
+                Only {product.stockQuantity} left
               </Badge>
             )}
             {discount > 0 && (
@@ -80,9 +80,9 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
                 {discount}% OFF
               </Badge>
             )}
-            {parseFloat(product.rating || "0") >= 4.5 && (
+            {product.stockQuantity > 20 && (
               <Badge className="bg-green-500 text-white">
-                Bestseller
+                In Stock
               </Badge>
             )}
           </div>
@@ -106,25 +106,16 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
           </h3>
           
           <p className="text-gray-600 text-sm mb-2">
-            {product.fabric} • {product.occasion}
+            {product.fabric} • {product.category}
           </p>
 
-          {/* Rating */}
+          {/* Product Info */}
           <div className="flex items-center mb-2">
-            <div className="flex text-golden">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-4 h-4 ${
-                    i < Math.floor(parseFloat(product.rating || "0"))
-                      ? 'fill-current'
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-gray-500 text-sm ml-2">
-              ({product.reviewCount} reviews)
+            <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
+              {product.fabric}
+            </span>
+            <span className="ml-2 text-sm text-gray-600">
+              SKU: {product.sku}
             </span>
           </div>
 
@@ -134,9 +125,9 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
               <span className="text-lg font-bold text-charcoal">
                 ₹{product.price || '0'}
               </span>
-              {product.originalPrice && (
+              {product.costPrice && discount > 0 && (
                 <span className="text-sm text-gray-500 line-through">
-                  ₹{product.originalPrice}
+                  ₹{product.costPrice}
                 </span>
               )}
             </div>
@@ -144,7 +135,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
             <Button
               size="sm"
               onClick={handleAddToCart}
-              disabled={isAddingToCart || !product.inStock}
+              disabled={isAddingToCart || !product.stockQuantity}
               className="bg-golden hover:bg-yellow-600 text-charcoal font-semibold transition-all transform hover:scale-105"
             >
               {isAddingToCart ? (
@@ -159,7 +150,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
           </div>
 
           {/* Stock Status */}
-          {product.inStock === 0 && (
+          {product.stockQuantity === 0 && (
             <p className="text-red-500 text-sm mt-2 font-medium">Out of Stock</p>
           )}
         </CardContent>

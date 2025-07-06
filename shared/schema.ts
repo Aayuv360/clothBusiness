@@ -20,24 +20,26 @@ export interface Category {
 }
 
 export interface Product {
-  _id: string;
+  _id?: string;
+  id?: number;
   name: string;
+  sku: string;
   description: string;
+  category: string;
   price: string;
-  originalPrice?: string;
-  categoryId: string;
+  costPrice: string;
+  stockQuantity: number;
+  minStockLevel: number;
   fabric: string;
   color: string;
-  length?: string;
-  blouseLength?: string;
-  occasion: string;
-  brand?: string;
+  size?: string;
+  sizes?: string[] | null;
+  colors?: string[] | null;
   images: string[];
-  inStock: number;
-  rating: string;
-  reviewCount: number;
+  imageUrl: string;
   isActive: boolean;
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 export interface Address {
@@ -118,20 +120,20 @@ export const insertCategorySchema = z.object({
 
 export const insertProductSchema = z.object({
   name: z.string().min(1),
+  sku: z.string().min(1),
   description: z.string().min(1),
+  category: z.string().min(1),
   price: z.string().min(1),
-  originalPrice: z.string().optional(),
-  categoryId: z.string().min(1),
+  costPrice: z.string().min(1),
+  stockQuantity: z.number().default(0),
+  minStockLevel: z.number().default(0),
   fabric: z.string().min(1),
   color: z.string().min(1),
-  length: z.string().optional(),
-  blouseLength: z.string().optional(),
-  occasion: z.string().min(1),
-  brand: z.string().optional(),
+  size: z.string().optional(),
+  sizes: z.array(z.string()).nullable().optional(),
+  colors: z.array(z.string()).nullable().optional(),
   images: z.array(z.string()),
-  inStock: z.number().default(0),
-  rating: z.string().default("0"),
-  reviewCount: z.number().default(0),
+  imageUrl: z.string().min(1),
   isActive: z.boolean().default(true),
 });
 

@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
-import { useAuth } from '@/hooks/use-auth';
-import type { CartItem, Product } from '@shared/schema';
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
+import type { CartItem, Product } from "@shared/schema";
 
 type CartItemWithProduct = CartItem & { product: Product };
 
@@ -13,29 +13,36 @@ export function useCart() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const userId = user?._id || user?.id;
   const { data: cartItems = [], isLoading } = useQuery({
-    queryKey: ['/api/cart', user?.id],
+    queryKey: ["/api/cart", userId],
     queryFn: async () => {
-      if (!user?.id) throw new Error('User not authenticated');
-      const response = await fetch(`/api/cart/${user.id}`);
-      if (!response.ok) throw new Error('Failed to fetch cart');
+      if (!userId) throw new Error("User not authenticated");
+      const response = await fetch(`/api/cart/${userId}`);
+      if (!response.ok) throw new Error("Failed to fetch cart");
       return response.json();
     },
-    enabled: !!user?.id,
+    enabled: !!userId,
   });
 
   const addToCartMutation = useMutation({
-    mutationFn: async ({ productId, quantity = 1 }: { productId: string; quantity?: number }) => {
-      if (!user?.id) throw new Error('User not authenticated');
-      const response = await apiRequest('POST', '/api/cart', {
-        userId: user.id,
+    mutationFn: async ({
+      productId,
+      quantity = 1,
+    }: {
+      productId: string;
+      quantity?: number;
+    }) => {
+      if (!userId) throw new Error("User not authenticated");
+      const response = await apiRequest("POST", "/api/cart", {
+        userId,
         productId,
-        quantity
+        quantity,
       });
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", userId] });
       toast({
         title: "Added to cart",
         description: "Item has been added to your cart.",
@@ -47,16 +54,18 @@ export function useCart() {
         description: "Please try again.",
         variant: "destructive",
       });
-    }
+    },
   });
 
   const updateQuantityMutation = useMutation({
     mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
-      const response = await apiRequest('PATCH', `/api/cart/${id}`, { quantity });
+      const response = await apiRequest("PATCH", `/api/cart/${id}`, {
+        quantity,
+      });
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", userId] });
     },
     onError: () => {
       toast({
@@ -64,16 +73,16 @@ export function useCart() {
         description: "Please try again.",
         variant: "destructive",
       });
-    }
+    },
   });
 
   const removeFromCartMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest('DELETE', `/api/cart/${id}`);
+      const response = await apiRequest("DELETE", `/api/cart/${id}`);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", userId] });
       toast({
         title: "Removed from cart",
         description: "Item has been removed from your cart.",
@@ -85,16 +94,16 @@ export function useCart() {
         description: "Please try again.",
         variant: "destructive",
       });
-    }
+    },
   });
 
   const clearCartMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const response = await apiRequest('DELETE', `/api/cart/clear/${userId}`);
+      const response = await apiRequest("DELETE", `/api/cart/clear/${userId}`);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", userId] });
       toast({
         title: "Cart cleared",
         description: "All items have been removed from your cart.",
@@ -106,7 +115,7 @@ export function useCart() {
         description: "Please try again.",
         variant: "destructive",
       });
-    }
+    },
   });
 
   const addToCart = (productId: string, quantity?: number) => {
@@ -133,20 +142,26 @@ export function useCart() {
     removeFromCartMutation.mutate(id);
   };
 
-  const clearCart = (userId: string) => {
-    clearCartMutation.mutate(userId);
+  const clearCart = () => {
+    if (userId) clearCartMutation.mutate(userId);
   };
 
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
 
-  const cartTotal = cartItems.reduce((total: number, item: CartItemWithProduct) => {
-    return total + (parseFloat(item.product.price || '0') * item.quantity);
-  }, 0);
+  const cartTotal = cartItems.reduce(
+    (total: number, item: CartItemWithProduct) => {
+      return total + parseFloat(item?.product?.price || "0") * item.quantity;
+    },
+    0,
+  );
 
-  const cartCount = cartItems.reduce((count: number, item: CartItemWithProduct) => {
-    return count + item.quantity;
-  }, 0);
+  const cartCount = cartItems.reduce(
+    (count: number, item: CartItemWithProduct) => {
+      return count + item.quantity;
+    },
+    0,
+  );
 
   return {
     cartItems,
@@ -162,6 +177,6 @@ export function useCart() {
     closeCart,
     isAddingToCart: addToCartMutation.isPending,
     isUpdating: updateQuantityMutation.isPending,
-    isRemoving: removeFromCartMutation.isPending
+    isRemoving: removeFromCartMutation.isPending,
   };
 }

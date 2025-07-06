@@ -38,48 +38,52 @@ const categorySchema = new Schema<ICategory>({
 
 export const Category = mongoose.model<ICategory>('Category', categorySchema);
 
-// Product Schema
+// Product Schema for sm_products collection
 export interface IProduct extends Document {
   name: string;
+  sku: string;
   description: string;
+  category: string;
   price: string;
-  originalPrice?: string;
-  categoryId: mongoose.Types.ObjectId;
+  costPrice: string;
+  stockQuantity: number;
+  minStockLevel: number;
   fabric: string;
   color: string;
-  length?: string;
-  blouseLength?: string;
-  occasion: string;
-  brand?: string;
+  size?: string;
+  sizes?: string[] | null;
+  colors?: string[] | null;
   images: string[];
-  inStock: number;
-  rating: string;
-  reviewCount: number;
+  imageUrl: string;
   isActive: boolean;
   createdAt: Date;
+  updatedAt?: Date;
+  id?: number;
 }
 
 const productSchema = new Schema<IProduct>({
   name: { type: String, required: true },
+  sku: { type: String, required: true },
   description: { type: String, required: true },
+  category: { type: String, required: true },
   price: { type: String, required: true },
-  originalPrice: { type: String },
-  categoryId: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
+  costPrice: { type: String, required: true },
+  stockQuantity: { type: Number, default: 0 },
+  minStockLevel: { type: Number, default: 0 },
   fabric: { type: String, required: true },
   color: { type: String, required: true },
-  length: { type: String },
-  blouseLength: { type: String },
-  occasion: { type: String, required: true },
-  brand: { type: String },
+  size: { type: String },
+  sizes: [{ type: String }],
+  colors: [{ type: String }],
   images: [{ type: String }],
-  inStock: { type: Number, default: 0 },
-  rating: { type: String, default: '0' },
-  reviewCount: { type: Number, default: 0 },
+  imageUrl: { type: String, required: true },
   isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  id: { type: Number }
 });
 
-export const Product = mongoose.model<IProduct>('Product', productSchema);
+export const Product = mongoose.model<IProduct>('sm_products', productSchema);
 
 // Address Schema
 export interface IAddress extends Document {
