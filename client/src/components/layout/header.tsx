@@ -121,7 +121,7 @@ export default function Header() {
                 variant="ghost"
                 size="sm"
                 className="text-charcoal hover:text-golden relative"
-                onClick={openCart}
+                onClick={() => setLocation('/cart')}
               >
                 <ShoppingBag className="h-5 w-5" />
                 {cartCount > 0 && (
@@ -170,10 +170,8 @@ export default function Header() {
                     {/* Mobile Navigation */}
                     <nav className="flex flex-col space-y-4">
                       {navigation.map((item) => (
-                        <Link key={item.name} href={item.href}>
-                          <a className="text-lg font-medium text-charcoal hover:text-golden transition-colors">
-                            {item.name}
-                          </a>
+                        <Link key={item.name} href={item.href} className="text-lg font-medium text-charcoal hover:text-golden transition-colors">
+                          {item.name}
                         </Link>
                       ))}
                     </nav>
@@ -183,11 +181,14 @@ export default function Header() {
                       {isAuthenticated ? (
                         <>
                           <p className="text-sm text-gray-600">Welcome, {user?.username}!</p>
-                          <Link href="/orders">
-                            <a className="text-charcoal hover:text-golden">My Orders</a>
+                          <Link href="/orders" className="text-charcoal hover:text-golden">
+                            My Orders
                           </Link>
-                          <Link href="/wishlist">
-                            <a className="text-charcoal hover:text-golden">Wishlist</a>
+                          <Link href="/wishlist" className="text-charcoal hover:text-golden">
+                            Wishlist
+                          </Link>
+                          <Link href="/cart" className="text-charcoal hover:text-golden">
+                            Cart
                           </Link>
                         </>
                       ) : (
