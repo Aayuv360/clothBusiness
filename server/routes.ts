@@ -5,10 +5,10 @@ import { insertUserSchema, insertProductSchema, insertAddressSchema, insertCartS
 import Razorpay from "razorpay";
 import crypto from "crypto";
 
-// Initialize Razorpay
+// Initialize Razorpay with environment variables
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_9WdKDVR2EUhGfq',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_secret_for_test'
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {

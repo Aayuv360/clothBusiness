@@ -125,7 +125,7 @@ export default function Checkout() {
 
       // Initialize Razorpay
       const options = {
-        key: 'rzp_test_9WdKDVR2EUhGfq', // Test key - replace with actual key
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_UxXBzl98ySixq7',
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'Saree Store',

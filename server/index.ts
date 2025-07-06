@@ -1,5 +1,7 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { connectDB } from "./mongodb";
 
@@ -45,6 +47,8 @@ app.use((req, res, next) => {
   const { MongoStorage } = await import("./mongodb");
   new MongoStorage();
   
+  // Import routes after dotenv is configured
+  const { registerRoutes } = await import("./routes");
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
