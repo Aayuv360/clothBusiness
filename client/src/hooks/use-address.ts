@@ -10,14 +10,14 @@ export function useAddress() {
   const queryClient = useQueryClient();
 
   const { data: addresses = [], isLoading } = useQuery({
-    queryKey: ['/api/addresses', user?._id],
+    queryKey: ['/api/addresses', user?.id],
     queryFn: async () => {
-      if (!user?._id) throw new Error('User not authenticated');
-      const response = await fetch(`/api/addresses/${user._id}`);
+      if (!user?.id) throw new Error('User not authenticated');
+      const response = await fetch(`/api/addresses/${user.id}`);
       if (!response.ok) throw new Error('Failed to fetch addresses');
       return response.json();
     },
-    enabled: !!user?._id,
+    enabled: !!user?.id,
   });
 
   const createAddressMutation = useMutation({
@@ -26,7 +26,7 @@ export function useAddress() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/addresses', user?._id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/addresses', user?.id] });
       toast({
         title: "Address added",
         description: "New address has been saved successfully.",
@@ -47,7 +47,7 @@ export function useAddress() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/addresses', user?._id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/addresses', user?.id] });
       toast({
         title: "Address updated",
         description: "Address has been updated successfully.",
@@ -68,7 +68,7 @@ export function useAddress() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/addresses', user?._id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/addresses', user?.id] });
       toast({
         title: "Address deleted",
         description: "Address has been deleted successfully.",
@@ -92,7 +92,7 @@ export function useAddress() {
       });
       return;
     }
-    createAddressMutation.mutate({ ...addressData, userId: user._id });
+    createAddressMutation.mutate({ ...addressData, userId: user.id });
   };
 
   const updateAddress = (id: string, data: Partial<InsertAddress>) => {

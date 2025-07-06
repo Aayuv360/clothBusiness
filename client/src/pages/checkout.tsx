@@ -33,7 +33,7 @@ export default function Checkout() {
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
   const [newAddress, setNewAddress] = useState<InsertAddress>({
-    userId: user?._id || '',
+    userId: user?.id || '',
     name: user?.username || '',
     phone: user?.phone || '',
     addressLine1: '',
@@ -113,7 +113,7 @@ export default function Checkout() {
     setIsAddressModalOpen(false);
     setEditingAddress(null);
     setNewAddress({
-      userId: user?._id || '',
+      userId: user?.id || '',
       name: user?.username || '',
       phone: user?.phone || '',
       addressLine1: '',
@@ -178,7 +178,7 @@ export default function Checkout() {
         body: JSON.stringify({
           amount: finalTotal * 100, // Razorpay expects amount in paise
           currency: 'INR',
-          userId: user!._id,
+          userId: user!.id,
           cartItems: cartItems,
           shippingAddress: selectedAddress
         }),
@@ -210,7 +210,7 @@ export default function Checkout() {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                userId: user!._id,
+                userId: user!.id,
                 cartItems: cartItems,
                 shippingAddress: selectedAddress
               }),
@@ -291,7 +291,7 @@ export default function Checkout() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: user!._id,
+          userId: user!.id,
           total: finalTotal.toString(),
           shippingCost: shippingCost.toString(),
           paymentMethod: paymentMethod,
@@ -404,7 +404,7 @@ export default function Checkout() {
                           onClick={() => {
                             setEditingAddress(null);
                             setNewAddress({
-                              userId: user?._id || '',
+                              userId: user?.id || '',
                               name: user?.username || '',
                               phone: user?.phone || '',
                               addressLine1: '',
