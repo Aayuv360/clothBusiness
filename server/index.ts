@@ -13,14 +13,26 @@ app.use(express.urlencoded({ extended: false }));
 
 // Session configuration with MongoDB storage
 const MONGODB_URI = "mongodb+srv://sathishreddyk0337:MmNdrMQ7lWp0I5m1@cluster0.fs4vkd7.mongodb.net/clothbusiness";
+// Create MongoStore with connection to same database
+const store = MongoStore.create({
+  mongoUrl: MONGODB_URI,
+  collectionName: 'sessions',
+  ttl: 60 * 60 * 24 * 7 // 7 days in seconds
+});
+
+store.on('error', function(error) {
+  console.error('Session store error:', error);
+});
+
+store.on('connected', function() {
+  console.log('Session store connected to MongoDB');
+});
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'fallback-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: MONGODB_URI,
-    collectionName: 'sessions'
-  }),
+  store: store,
   cookie: {
     secure: false, // Set to true in production with HTTPS
     httpOnly: true, // Prevents XSS attacks

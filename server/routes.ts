@@ -45,7 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Store user session in database
-      req.session.userId = user._id;
+      req.session.userId = (user as any).id || (user as any)._id?.toString(); // MongoDB converts _id to id in convertDoc
       req.session.user = user;
       
       const { password: _, ...userWithoutPassword } = user;
@@ -77,6 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password: _, ...userWithoutPassword } = req.session.user!;
       res.json(userWithoutPassword);
     } catch (error) {
+      console.error('Auth check error:', error);
       res.status(500).json({ message: "Failed to get user info" });
     }
   });
