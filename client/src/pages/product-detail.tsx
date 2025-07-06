@@ -16,7 +16,7 @@ import type { Product, Review } from '@shared/schema';
 export default function ProductDetail() {
   const [, params] = useRoute('/product/:id');
   const pageRef = useRef<HTMLDivElement>(null);
-  const productId = params?.id ? parseInt(params.id) : 0;
+  const productId = params?.id;
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -25,8 +25,14 @@ export default function ProductDetail() {
   const { addToCart, isAddingToCart } = useCart();
   const { isAuthenticated } = useAuth();
 
-  const { data: product, isLoading } = useQuery({
+  const { data: product, isLoading } = useQuery<Product>({
     queryKey: ['/api/products', productId],
+    queryFn: async () => {
+      if (!productId) throw new Error('Product ID is required');
+      const response = await fetch(`/api/products/${productId}`);
+      if (!response.ok) throw new Error('Product not found');
+      return response.json();
+    },
     enabled: !!productId,
   });
 
