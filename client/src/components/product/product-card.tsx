@@ -23,7 +23,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
   }
 
   const discount = product.costPrice 
-    ? Math.round((1 - parseFloat(product.price) / parseFloat(product.costPrice)) * 100)
+    ? Math.round(((parseFloat(product.costPrice) - parseFloat(product.price)) / parseFloat(product.costPrice)) * 100)
     : 0;
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -49,7 +49,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
       <Link href={`/product/${product._id}`}>
         <div className="relative">
           <img
-            src={product.images?.[0] || '/placeholder-image.jpg'}
+            src={product.imageUrl || product.images?.[0] || '/placeholder-image.jpg'}
             alt={product.name || 'Product'}
             className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
           />
@@ -106,16 +106,16 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
           </h3>
           
           <p className="text-gray-600 text-sm mb-2">
-            {product.fabric} • {product.category}
+            {product.fabric} • {product.color}
           </p>
 
           {/* Product Info */}
           <div className="flex items-center mb-2">
             <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
-              {product.fabric}
+              SKU: {product.sku}
             </span>
             <span className="ml-2 text-sm text-gray-600">
-              SKU: {product.sku}
+              Stock: {product.stockQuantity}
             </span>
           </div>
 

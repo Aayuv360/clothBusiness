@@ -111,6 +111,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 06, 2025 - SM_Products Schema Migration
+- Updated database schema to use `sm_products` table instead of `products`
+- Migrated to new fields: `sku`, `costPrice`, `stockQuantity`, `minStockLevel`
+- Updated image handling to use `/api/images/` URL structure from database
+- Modified MongoDB collection name to 'sm_products' 
+- Updated frontend components to display SKU, stock levels, and correct pricing
+- Maintained backward compatibility with existing cart and authentication systems
+
 ### January 06, 2025 - Address Management and Checkout Enhancement
 - Implemented comprehensive address CRUD operations in checkout page
 - Added address selection functionality with radio button interface
