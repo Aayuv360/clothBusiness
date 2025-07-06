@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Search, Heart, ShoppingBag, User, Menu, X } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/use-auth';
 import { useCart } from '@/hooks/use-cart';
 import CartSidebar from '@/components/cart/cart-sidebar';
@@ -16,7 +17,7 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { cartCount, openCart } = useCart();
 
   const navigation = [
@@ -132,20 +133,63 @@ export default function Header() {
               </Button>
 
               {/* User Account */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-charcoal hover:text-golden"
-                onClick={() => {
-                  if (isAuthenticated) {
-                    setLocation('/orders');
-                  } else {
-                    setIsAuthModalOpen(true);
-                  }
-                }}
-              >
-                <User className="h-5 w-5" />
-              </Button>
+              {isAuthenticated && user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-charcoal hover:text-golden flex items-center space-x-2"
+                    >
+                      <User className="h-5 w-5" />
+                      <span className="hidden md:block font-medium">{user.username}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem
+                      onClick={() => setLocation('/profile')}
+                      className="cursor-pointer"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Profile Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setLocation('/orders')}
+                      className="cursor-pointer"
+                    >
+                      <ShoppingBag className="h-4 w-4 mr-2" />
+                      Order History
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setLocation('/wishlist')}
+                      className="cursor-pointer"
+                    >
+                      <Heart className="h-4 w-4 mr-2" />
+                      My Wishlist
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        logout();
+                        setLocation('/');
+                      }}
+                      className="cursor-pointer text-red-600 focus:text-red-600"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-charcoal hover:text-golden"
+                  onClick={() => setIsAuthModalOpen(true)}
+                >
+                  <User className="h-5 w-5" />
+                </Button>
+              )}
 
               {/* Mobile Menu */}
               <Sheet>

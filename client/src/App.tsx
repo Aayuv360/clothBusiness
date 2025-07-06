@@ -11,6 +11,7 @@ import Cart from "@/pages/cart";
 import Wishlist from "@/pages/wishlist";
 import Checkout from "@/pages/checkout";
 import Orders from "@/pages/orders";
+import Profile from "@/pages/profile";
 import Auth from "@/pages/auth";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -29,6 +30,7 @@ function Router() {
           <Route path="/wishlist" component={Wishlist} />
           <Route path="/checkout" component={Checkout} />
           <Route path="/orders" component={Orders} />
+          <Route path="/profile" component={Profile} />
           <Route path="/auth" component={Auth} />
           <Route component={NotFound} />
         </Switch>
