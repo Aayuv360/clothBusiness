@@ -143,10 +143,10 @@ export class MongoStorage implements IStorage {
           sizes: ['S', 'M', 'L', 'XL'],
           colors: ['Red', 'Maroon', 'Burgundy'],
           images: [
-            '/api/images/royal-red-silk-1',
-            '/api/images/royal-red-silk-2'
+            'https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1605481024394-39126949ebe4?w=800&h=600&fit=crop'
           ],
-          imageUrl: '/api/images/royal-red-silk-1',
+          imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800&h=600&fit=crop',
           isActive: true,
           id: 482481
         },
@@ -165,10 +165,10 @@ export class MongoStorage implements IStorage {
           sizes: ['S', 'M', 'L'],
           colors: ['Blue', 'Navy', 'Sky Blue'],
           images: [
-            '/api/images/blue-cotton-1',
-            '/api/images/blue-cotton-2'
+            'https://images.unsplash.com/photo-1588066892455-7b88c1dc9d6b?w=800&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=800&h=600&fit=crop'
           ],
-          imageUrl: '/api/images/blue-cotton-1',
+          imageUrl: 'https://images.unsplash.com/photo-1588066892455-7b88c1dc9d6b?w=800&h=600&fit=crop',
           isActive: true,
           id: 482482
         },
@@ -187,10 +187,10 @@ export class MongoStorage implements IStorage {
           sizes: ['M', 'L', 'XL'],
           colors: ['Golden', 'Silver', 'Bronze'],
           images: [
-            '/api/images/golden-banarasi-1',
-            '/api/images/golden-banarasi-2'
+            'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800&h=600&fit=crop'
           ],
-          imageUrl: '/api/images/golden-banarasi-1',
+          imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&h=600&fit=crop',
           isActive: true,
           id: 482483
         }
