@@ -63,7 +63,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
             <div>
               <div className="main-image mb-4">
                 <img
-                  src={product.images?.[selectedImage] || '/placeholder-image.jpg'}
+                  src={product.images?.[selectedImage]}
                   alt={product.name || 'Product'}
                   className="w-full h-96 object-cover rounded-lg"
                 />

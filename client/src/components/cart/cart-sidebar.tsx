@@ -75,7 +75,7 @@ export default function CartSidebar() {
                   className="flex items-center space-x-4 pb-4 border-b"
                 >
                   <img
-                    src={item?.product?.images?.[0] || "/placeholder-image.jpg"}
+                    src={item?.product?.images?.[0]}
                     alt={item?.product?.name || "Product"}
                     className="w-16 h-16 object-cover rounded"
                   />

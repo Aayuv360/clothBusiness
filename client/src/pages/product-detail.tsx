@@ -146,7 +146,7 @@ export default function ProductDetail() {
           <div>
             <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
               <img
-                src={product.images?.[selectedImageIndex] || product.images?.[0] || '/placeholder-image.jpg'}
+                src={product.images?.[selectedImageIndex] || product.images?.[0]}
                 alt={product.name}
                 className="w-full h-96 object-cover rounded-lg"
               />

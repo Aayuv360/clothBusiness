@@ -49,7 +49,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
       <Link href={`/product/${product.id || product._id}`}>
         <div className="relative">
           <img
-            src={product.imageUrl || product.images?.[0] || '/placeholder-image.jpg'}
+            src={product.imageUrl || product.images?.[0]}
             alt={product.name || 'Product'}
             className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
           />
