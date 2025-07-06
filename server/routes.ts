@@ -245,6 +245,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/addresses/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const addressData = insertAddressSchema.partial().parse(req.body);
+      const address = await getStorage().updateAddress(id, addressData);
+      if (!address) {
+        return res.status(404).json({ message: "Address not found" });
+      }
+      res.json(address);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update address" });
+    }
+  });
+
+  app.delete("/api/addresses/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const success = await getStorage().deleteAddress(id);
+      if (!success) {
+        return res.status(404).json({ message: "Address not found" });
+      }
+      res.json({ message: "Address deleted successfully" });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to delete address" });
+    }
+  });
+
   // Orders routes
   app.get("/api/orders/:userId", async (req, res) => {
     try {

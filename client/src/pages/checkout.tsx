@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'wouter';
-import { CreditCard, Truck, MapPin, Phone, Check, ArrowLeft, Wallet } from 'lucide-react';
+import { CreditCard, Truck, MapPin, Phone, Check, ArrowLeft, Wallet, Plus, Edit2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,31 +9,40 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
+import { useAddress } from '@/hooks/use-address';
 import { useToast } from '@/hooks/use-toast';
 import { animatePageEntry } from '@/lib/animations';
+import type { Address, InsertAddress } from '@shared/schema';
 
 export default function Checkout() {
   const [, setLocation] = useLocation();
   const pageRef = useRef<HTMLDivElement>(null);
   const { cartItems, cartTotal, clearCart } = useCart();
   const { user, isAuthenticated } = useAuth();
+  const { addresses, createAddress, updateAddress, deleteAddress, isCreating, isUpdating, isDeleting } = useAddress();
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
-  const [shippingAddress, setShippingAddress] = useState({
+  const [newAddress, setNewAddress] = useState<InsertAddress>({
+    userId: user?._id || '',
     name: user?.username || '',
     phone: user?.phone || '',
-    email: user?.email || '',
     addressLine1: '',
     addressLine2: '',
     city: '',
     state: '',
     pincode: '',
-    type: 'home'
+    type: 'home',
+    isDefault: false
   });
 
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
@@ -73,17 +82,75 @@ export default function Checkout() {
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!shippingAddress.name || !shippingAddress.phone || !shippingAddress.addressLine1 || 
-        !shippingAddress.city || !shippingAddress.state || !shippingAddress.pincode) {
+    if (!selectedAddressId) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in all required address fields.",
+        title: "Address Required",
+        description: "Please select a shipping address.",
         variant: "destructive"
       });
       return;
     }
     setCurrentStep(2);
   };
+
+  const handleSaveAddress = () => {
+    if (!newAddress.name || !newAddress.phone || !newAddress.addressLine1 || 
+        !newAddress.city || !newAddress.state || !newAddress.pincode) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (editingAddress) {
+      updateAddress(editingAddress._id, newAddress);
+    } else {
+      createAddress(newAddress);
+    }
+    
+    setIsAddressModalOpen(false);
+    setEditingAddress(null);
+    setNewAddress({
+      userId: user?._id || '',
+      name: user?.username || '',
+      phone: user?.phone || '',
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      state: '',
+      pincode: '',
+      type: 'home',
+      isDefault: false
+    });
+  };
+
+  const handleEditAddress = (address: Address) => {
+    setEditingAddress(address);
+    setNewAddress({
+      userId: address.userId,
+      name: address.name,
+      phone: address.phone,
+      addressLine1: address.addressLine1,
+      addressLine2: address.addressLine2 || '',
+      city: address.city,
+      state: address.state,
+      pincode: address.pincode,
+      type: address.type,
+      isDefault: address.isDefault
+    });
+    setIsAddressModalOpen(true);
+  };
+
+  const handleDeleteAddress = (addressId: string) => {
+    deleteAddress(addressId);
+    if (selectedAddressId === addressId) {
+      setSelectedAddressId('');
+    }
+  };
+
+  const selectedAddress = addresses.find(addr => addr._id === selectedAddressId);
 
   const handlePaymentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,9 +178,9 @@ export default function Checkout() {
         body: JSON.stringify({
           amount: finalTotal * 100, // Razorpay expects amount in paise
           currency: 'INR',
-          userId: user!.id,
+          userId: user!._id,
           cartItems: cartItems,
-          shippingAddress: shippingAddress
+          shippingAddress: selectedAddress
         }),
       });
 
@@ -143,9 +210,9 @@ export default function Checkout() {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                userId: user!.id,
+                userId: user!._id,
                 cartItems: cartItems,
-                shippingAddress: shippingAddress
+                shippingAddress: selectedAddress
               }),
             });
 
@@ -170,9 +237,9 @@ export default function Checkout() {
           }
         },
         prefill: {
-          name: shippingAddress.name,
-          email: shippingAddress.email,
-          contact: shippingAddress.phone,
+          name: selectedAddress?.name || '',
+          email: user?.email || '',
+          contact: selectedAddress?.phone || '',
         },
         theme: {
           color: '#F59E0B', // Golden color
@@ -224,13 +291,13 @@ export default function Checkout() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: user!.id,
+          userId: user!._id,
           total: finalTotal.toString(),
           shippingCost: shippingCost.toString(),
           paymentMethod: paymentMethod,
           paymentStatus: paymentMethod === 'cod' ? 'pending' : 'completed',
           status: 'pending',
-          shippingAddress: shippingAddress,
+          shippingAddress: selectedAddress,
           items: cartItems.map((item: any) => ({
             productId: item.product.id,
             quantity: item.quantity,
@@ -324,117 +391,112 @@ export default function Checkout() {
             {currentStep === 1 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center text-charcoal">
-                    <MapPin className="h-5 w-5 mr-2" />
-                    Shipping Address
+                  <CardTitle className="flex items-center justify-between text-charcoal">
+                    <div className="flex items-center">
+                      <MapPin className="h-5 w-5 mr-2" />
+                      Shipping Address
+                    </div>
+                    <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setEditingAddress(null);
+                            setNewAddress({
+                              userId: user?._id || '',
+                              name: user?.username || '',
+                              phone: user?.phone || '',
+                              addressLine1: '',
+                              addressLine2: '',
+                              city: '',
+                              state: '',
+                              pincode: '',
+                              type: 'home',
+                              isDefault: false
+                            });
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add New Address
+                        </Button>
+                      </DialogTrigger>
+                    </Dialog>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAddressSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="name">Full Name *</Label>
-                        <Input
-                          id="name"
-                          value={shippingAddress.name}
-                          onChange={(e) => setShippingAddress(prev => ({ ...prev, name: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="phone">Phone Number *</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={shippingAddress.phone}
-                          onChange={(e) => setShippingAddress(prev => ({ ...prev, phone: e.target.value }))}
-                          required
-                        />
-                      </div>
+                    {/* Address Selection */}
+                    <div className="space-y-3">
+                      {addresses.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                          <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>No saved addresses found.</p>
+                          <p className="text-sm">Add a new address to continue.</p>
+                        </div>
+                      ) : (
+                        <RadioGroup value={selectedAddressId} onValueChange={setSelectedAddressId}>
+                          {addresses.map((address) => (
+                            <div key={address._id} className="border rounded-lg p-4 hover:border-golden transition-colors">
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-start space-x-3">
+                                  <RadioGroupItem value={address._id} id={address._id} className="mt-1" />
+                                  <div className="flex-1">
+                                    <Label htmlFor={address._id} className="cursor-pointer">
+                                      <div className="font-medium text-charcoal">{address.name}</div>
+                                      <div className="text-sm text-gray-600 mt-1">
+                                        {address.addressLine1}
+                                        {address.addressLine2 && `, ${address.addressLine2}`}
+                                      </div>
+                                      <div className="text-sm text-gray-600">
+                                        {address.city}, {address.state} - {address.pincode}
+                                      </div>
+                                      <div className="text-sm text-gray-600">
+                                        Phone: {address.phone}
+                                      </div>
+                                      {address.isDefault && (
+                                        <span className="inline-block mt-1 px-2 py-1 text-xs bg-golden text-charcoal rounded">
+                                          Default
+                                        </span>
+                                      )}
+                                    </Label>
+                                  </div>
+                                </div>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEditAddress(address)}
+                                  >
+                                    <Edit2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteAddress(address._id)}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      )}
                     </div>
 
-                    <div>
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={shippingAddress.email}
-                        onChange={(e) => setShippingAddress(prev => ({ ...prev, email: e.target.value }))}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="addressLine1">Address Line 1 *</Label>
-                      <Input
-                        id="addressLine1"
-                        value={shippingAddress.addressLine1}
-                        onChange={(e) => setShippingAddress(prev => ({ ...prev, addressLine1: e.target.value }))}
-                        placeholder="House No, Building, Street"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="addressLine2">Address Line 2</Label>
-                      <Input
-                        id="addressLine2"
-                        value={shippingAddress.addressLine2}
-                        onChange={(e) => setShippingAddress(prev => ({ ...prev, addressLine2: e.target.value }))}
-                        placeholder="Landmark, Area"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="city">City *</Label>
-                        <Input
-                          id="city"
-                          value={shippingAddress.city}
-                          onChange={(e) => setShippingAddress(prev => ({ ...prev, city: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="state">State *</Label>
-                        <Input
-                          id="state"
-                          value={shippingAddress.state}
-                          onChange={(e) => setShippingAddress(prev => ({ ...prev, state: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="pincode">Pincode *</Label>
-                        <Input
-                          id="pincode"
-                          value={shippingAddress.pincode}
-                          onChange={(e) => setShippingAddress(prev => ({ ...prev, pincode: e.target.value }))}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label>Address Type</Label>
-                      <RadioGroup 
-                        value={shippingAddress.type} 
-                        onValueChange={(value) => setShippingAddress(prev => ({ ...prev, type: value }))}
-                        className="flex space-x-6 mt-2"
+                    <div className="pt-4">
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-golden hover:bg-yellow-600 text-charcoal"
+                        disabled={!selectedAddressId}
                       >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="home" id="home" />
-                          <Label htmlFor="home">Home</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="office" id="office" />
-                          <Label htmlFor="office">Office</Label>
-                        </div>
-                      </RadioGroup>
+                        Continue to Payment
+                      </Button>
                     </div>
-
-                    <Button type="submit" className="w-full bg-golden hover:bg-yellow-600 text-charcoal">
-                      Continue to Payment
-                    </Button>
                   </form>
                 </CardContent>
               </Card>
@@ -584,11 +646,11 @@ export default function Checkout() {
                   <div>
                     <h4 className="font-semibold text-charcoal mb-2">Shipping Address</h4>
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="font-medium">{shippingAddress.name}</p>
-                      <p>{shippingAddress.addressLine1}</p>
-                      {shippingAddress.addressLine2 && <p>{shippingAddress.addressLine2}</p>}
-                      <p>{shippingAddress.city}, {shippingAddress.state} {shippingAddress.pincode}</p>
-                      <p>{shippingAddress.phone}</p>
+                      <p className="font-medium">{selectedAddress?.name}</p>
+                      <p>{selectedAddress?.addressLine1}</p>
+                      {selectedAddress?.addressLine2 && <p>{selectedAddress.addressLine2}</p>}
+                      <p>{selectedAddress?.city}, {selectedAddress?.state} {selectedAddress?.pincode}</p>
+                      <p>{selectedAddress?.phone}</p>
                     </div>
                     <Button 
                       variant="link" 
@@ -706,6 +768,129 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      {/* Address Modal */}
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {editingAddress ? 'Edit Address' : 'Add New Address'}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="modal-name">Full Name *</Label>
+              <Input
+                id="modal-name"
+                value={newAddress.name}
+                onChange={(e) => setNewAddress(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Full Name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="modal-phone">Phone *</Label>
+              <Input
+                id="modal-phone"
+                value={newAddress.phone}
+                onChange={(e) => setNewAddress(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="Phone Number"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="modal-address1">Address Line 1 *</Label>
+            <Input
+              id="modal-address1"
+              value={newAddress.addressLine1}
+              onChange={(e) => setNewAddress(prev => ({ ...prev, addressLine1: e.target.value }))}
+              placeholder="House No, Building, Street"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="modal-address2">Address Line 2</Label>
+            <Input
+              id="modal-address2"
+              value={newAddress.addressLine2}
+              onChange={(e) => setNewAddress(prev => ({ ...prev, addressLine2: e.target.value }))}
+              placeholder="Landmark, Area"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="modal-city">City *</Label>
+              <Input
+                id="modal-city"
+                value={newAddress.city}
+                onChange={(e) => setNewAddress(prev => ({ ...prev, city: e.target.value }))}
+                placeholder="City"
+              />
+            </div>
+            <div>
+              <Label htmlFor="modal-state">State *</Label>
+              <Input
+                id="modal-state"
+                value={newAddress.state}
+                onChange={(e) => setNewAddress(prev => ({ ...prev, state: e.target.value }))}
+                placeholder="State"
+              />
+            </div>
+            <div>
+              <Label htmlFor="modal-pincode">Pincode *</Label>
+              <Input
+                id="modal-pincode"
+                value={newAddress.pincode}
+                onChange={(e) => setNewAddress(prev => ({ ...prev, pincode: e.target.value }))}
+                placeholder="Pincode"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label>Address Type</Label>
+            <Select value={newAddress.type} onValueChange={(value) => setNewAddress(prev => ({ ...prev, type: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="home">Home</SelectItem>
+                <SelectItem value="office">Office</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="default-address"
+              checked={newAddress.isDefault}
+              onCheckedChange={(checked) => setNewAddress(prev => ({ ...prev, isDefault: checked as boolean }))}
+            />
+            <Label htmlFor="default-address">Set as default address</Label>
+          </div>
+
+          <div className="flex space-x-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={() => setIsAddressModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="flex-1 bg-golden hover:bg-yellow-600 text-charcoal"
+              onClick={handleSaveAddress}
+              disabled={isCreating || isUpdating}
+            >
+              {isCreating || isUpdating ? 'Saving...' : 'Save Address'}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
     </div>
   );
 }

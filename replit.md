@@ -111,7 +111,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### July 05, 2025 - Razorpay Payment Integration
+### January 06, 2025 - Address Management and Checkout Enhancement
+- Implemented comprehensive address CRUD operations in checkout page
+- Added address selection functionality with radio button interface
+- Created address management modal for adding/editing addresses
+- Integrated address management with existing MongoDB storage
+- Users can now save multiple addresses and select during checkout
+- Enhanced Razorpay payment flow to use selected shipping address
+- Added proper validation and error handling for address operations
+
+### July 05, 2025 - Razorpay Payment Integration  
 - Successfully integrated Razorpay payment gateway for secure online transactions
 - Added backend API routes for order creation and payment verification
 - Updated checkout page with Razorpay payment option as the primary choice
