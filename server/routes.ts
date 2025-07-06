@@ -308,6 +308,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Image serving route
+  app.get("/api/images/:imageId", async (req, res) => {
+    try {
+      const imageId = req.params.imageId;
+      console.log(`Image request for ID: ${imageId}`);
+      
+      // Map different image IDs to different saree images for demo purposes
+      // In production, you would fetch actual images from GridFS, S3, or file system
+      const imageMap: { [key: string]: string } = {
+        '6869d8da4ee1273f64ae1a7b': 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&h=600&fit=crop', // Red silk saree
+        '6869dc42af2e17ba08fced48': 'https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=800&h=600&fit=crop', // Blue cotton saree
+        'royal-red-silk-1': 'https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800&h=600&fit=crop',
+        'royal-red-silk-2': 'https://images.unsplash.com/photo-1605481024394-39126949ebe4?w=800&h=600&fit=crop',
+        'blue-cotton-1': 'https://images.unsplash.com/photo-1588066892455-7b88c1dc9d6b?w=800&h=600&fit=crop',
+        'blue-cotton-2': 'https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=800&h=600&fit=crop',
+        'golden-banarasi-1': 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&h=600&fit=crop',
+        'golden-banarasi-2': 'https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800&h=600&fit=crop'
+      };
+      
+      const imageUrl = imageMap[imageId] || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&h=600&fit=crop';
+      console.log(`Proxying image: ${imageUrl}`);
+      
+      // Proxy the image from the external URL
+      const fetch = (await import('node-fetch')).default;
+      const response = await fetch(imageUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText}`);
+      }
+      
+      // Set appropriate headers
+      res.set({
+        'Content-Type': response.headers.get('content-type') || 'image/jpeg',
+        'Cache-Control': 'public, max-age=86400', // Cache for 1 day
+      });
+      
+      // Pipe the image data
+      response.body?.pipe(res);
+    } catch (error) {
+      console.error('Image serving error:', error);
+      res.status(500).json({ message: "Failed to serve image" });
+    }
+  });
+
   // Reviews routes
   app.get("/api/reviews/:productId", async (req, res) => {
     try {
