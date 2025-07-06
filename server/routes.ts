@@ -1,14 +1,22 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { getStorage } from "./storage";
-import { insertUserSchema, insertProductSchema, insertAddressSchema, insertCartSchema, insertWishlistSchema, insertOrderSchema, insertReviewSchema } from "@shared/schema";
+import {
+  insertUserSchema,
+  insertProductSchema,
+  insertAddressSchema,
+  insertCartSchema,
+  insertWishlistSchema,
+  insertOrderSchema,
+  insertReviewSchema,
+} from "@shared/schema";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 
 // Initialize Razorpay with environment variables
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -69,11 +77,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const filters = {
         categoryId: req.query.categoryId as string,
-        minPrice: req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined,
-        maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined,
+        minPrice: req.query.minPrice
+          ? parseFloat(req.query.minPrice as string)
+          : undefined,
+        maxPrice: req.query.maxPrice
+          ? parseFloat(req.query.maxPrice as string)
+          : undefined,
         fabric: req.query.fabric as string,
         color: req.query.color as string,
-        search: req.query.search as string
+        search: req.query.search as string,
       };
       const products = await getStorage().getProducts(filters);
       res.json(products);
@@ -301,7 +313,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { order, items } = req.body;
       const orderData = insertOrderSchema.parse(order);
       const orderNumber = `ORD${Date.now()}`;
-      const newOrder = await getStorage().createOrder({ ...orderData, orderNumber }, items);
+      const newOrder = await getStorage().createOrder(
+        { ...orderData, orderNumber },
+        items,
+      );
       res.json(newOrder);
     } catch (error) {
       res.status(400).json({ message: "Failed to create order" });
@@ -312,46 +327,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/images/:imageId", async (req, res) => {
     try {
       const imageId = req.params.imageId;
-      const mongoose = await import('mongoose');
+      const mongoose = await import("mongoose");
       const GridFSBucket = mongoose.default.mongo.GridFSBucket;
-      
+
       const db = mongoose.default.connection.db;
       if (!db) {
-        throw new Error('Database connection not available');
+        throw new Error("Database connection not available");
       }
-      
-      const bucket = new GridFSBucket(db, { bucketName: 'sm_images' });
-      
+
+      const bucket = new GridFSBucket(db, { bucketName: "sm_images" });
+
       // Check if file exists
-      const files = await db.collection('sm_images.files').findOne({ 
-        _id: new mongoose.default.Types.ObjectId(imageId) 
+      const files = await db.collection("sm_images.files").findOne({
+        _id: new mongoose.default.Types.ObjectId(imageId),
       });
-      
+
       if (!files) {
         return res.status(404).json({ message: "Image not found" });
       }
-      
+
       // Set appropriate headers
       res.set({
-        'Content-Type': files.metadata?.contentType || 'image/jpeg',
-        'Cache-Control': 'public, max-age=86400', // Cache for 1 day
-        'Content-Length': files.length.toString(),
+        "Content-Type": files.metadata?.contentType || "image/jpeg",
+        "Cache-Control": "public, max-age=86400", // Cache for 1 day
+        "Content-Length": files.length.toString(),
       });
-      
+
       // Stream the image from GridFS
-      const downloadStream = bucket.openDownloadStream(new mongoose.default.Types.ObjectId(imageId));
-      
-      downloadStream.on('error', (error) => {
-        console.error('GridFS download error:', error);
+      const downloadStream = bucket.openDownloadStream(
+        new mongoose.default.Types.ObjectId(imageId),
+      );
+
+      downloadStream.on("error", (error) => {
+        console.error("GridFS download error:", error);
         if (!res.headersSent) {
           res.status(500).json({ message: "Failed to serve image" });
         }
       });
-      
+
       downloadStream.pipe(res);
-      
     } catch (error) {
-      console.error('Image serving error:', error);
+      console.error("Image serving error:", error);
       if (!res.headersSent) {
         res.status(500).json({ message: "Failed to serve image" });
       }
@@ -382,19 +398,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Payment routes
   app.post("/api/payment/create-order", async (req, res) => {
     try {
-      const { amount, currency = 'INR' } = req.body;
-      
+      const { amount, currency = "INR" } = req.body;
+
       const options = {
         amount: amount, // amount in smallest currency unit
         currency: currency,
         receipt: `receipt_${Date.now()}`,
-        payment_capture: 1
+        payment_capture: 1,
       };
 
       const order = await razorpay.orders.create(options);
       res.json(order);
     } catch (error) {
-      console.error('Error creating Razorpay order:', error);
+      console.error("Error creating Razorpay order:", error);
       res.status(500).json({ message: "Failed to create payment order" });
     }
   });
@@ -407,12 +423,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         razorpay_signature,
         userId,
         cartItems,
-        shippingAddress
+        shippingAddress,
       } = req.body;
 
       const body = razorpay_order_id + "|" + razorpay_payment_id;
       const expectedSignature = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || 'dummy_secret_for_test')
+        .createHmac(
+          "sha256",
+          process.env.RAZORPAY_KEY_SECRET || "dummy_secret_for_test",
+        )
         .update(body.toString())
         .digest("hex");
 
@@ -421,8 +440,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isAuthentic) {
         // Payment is verified, create order in database
         const orderNumber = `ORD-${Date.now()}`;
-        const total = cartItems.reduce((sum: number, item: any) => 
-          sum + (parseFloat(item.product.price) * item.quantity), 0
+        const total = cartItems.reduce(
+          (sum: number, item: any) =>
+            sum + parseFloat(item.product.price) * item.quantity,
+          0,
         );
         const shippingCost = total >= 999 ? 0 : 99;
         const taxAmount = Math.round(total * 0.05);
@@ -433,40 +454,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
           orderNumber: orderNumber,
           total: finalTotal.toString(),
           shippingCost: shippingCost.toString(),
-          paymentMethod: 'razorpay',
-          paymentStatus: 'completed',
-          status: 'confirmed',
+          paymentMethod: "razorpay",
+          paymentStatus: "completed",
+          status: "confirmed",
           shippingAddress: shippingAddress,
-          estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+          estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
         };
 
         const orderItems = cartItems.map((item: any) => ({
           productId: item.product._id,
           quantity: item.quantity,
-          price: item.product.price
+          price: item.product.price,
         }));
 
         const order = await getStorage().createOrder(orderData, orderItems);
-        
+
         // Clear user's cart
         await getStorage().clearCart(userId);
 
         res.json({
           success: true,
           orderId: order._id,
-          message: "Payment verified and order created successfully"
+          message: "Payment verified and order created successfully",
         });
       } else {
         res.status(400).json({
           success: false,
-          message: "Payment verification failed"
+          message: "Payment verification failed",
         });
       }
     } catch (error) {
-      console.error('Error verifying payment:', error);
-      res.status(500).json({ 
+      console.error("Error verifying payment:", error);
+      res.status(500).json({
         success: false,
-        message: "Payment verification failed" 
+        message: "Payment verification failed",
       });
     }
   });
