@@ -386,7 +386,7 @@ export default function Checkout() {
       setIsProcessing(false);
     }
   };
-
+  console.log(user);
   if (!user || cartItems.length === 0) {
     return null;
   }
