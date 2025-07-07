@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Heart,
@@ -13,26 +13,39 @@ import {
   Shield,
   RotateCcw,
   MessageCircle,
+  Edit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import ProductCard from "@/components/product/product-card";
 import { useCart } from "@/hooks/use-cart";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import { animatePageEntry } from "@/lib/animations";
-import type { Product, Review } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import type { Product, Review, Category } from "@shared/schema";
 
 export default function ProductDetail() {
   const pageRef = useRef<HTMLDivElement>(null);
   const params = useParams();
   const productId = params.id;
+  const navigate = useNavigate();
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
 
   const { addToCart, isAddingToCart } = useCart();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: product, isLoading } = useQuery<Product>({
     queryKey: ["/api/products", productId],
@@ -45,10 +58,63 @@ export default function ProductDetail() {
     enabled: !!productId,
   });
 
-  const { data: reviews = [] } = useQuery({
+  const { data: reviews = [] } = useQuery<Review[]>({
     queryKey: ["/api/reviews", productId],
     enabled: !!productId,
   });
+
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
+  });
+
+  const { data: relatedProducts = [] } = useQuery<Product[]>({
+    queryKey: ["/api/products/category", product?.category],
+    enabled: !!product?.category,
+  });
+
+  const submitReviewMutation = useMutation({
+    mutationFn: async (reviewData: { productId: string; rating: number; comment: string }) => {
+      return apiRequest('/api/reviews', {
+        method: 'POST',
+        body: JSON.stringify(reviewData),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/reviews", productId] });
+      setReviewComment("");
+      setReviewRating(5);
+      setIsReviewDialogOpen(false);
+      toast({
+        title: "Review submitted successfully!",
+        description: "Thank you for your feedback.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Failed to submit review",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmitReview = () => {
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to submit a review.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!productId) return;
+    
+    submitReviewMutation.mutate({
+      productId,
+      rating: reviewRating,
+      comment: reviewComment,
+    });
+  };
 
   useEffect(() => {
     if (pageRef.current) {
@@ -94,11 +160,14 @@ export default function ProductDetail() {
           <h1 className="text-2xl font-bold text-gray-600 mb-4">
             Product not found
           </h1>
-          <Link href="/products">
-            <Button className="bg-golden hover:bg-yellow-600 text-charcoal">
-              Browse Products
-            </Button>
-          </Link>
+          <Button
+            className="bg-golden hover:bg-yellow-600 text-charcoal"
+            onClick={() => {
+              navigate("/products");
+            }}
+          >
+            Browse Products
+          </Button>
         </div>
       </div>
     );
@@ -116,7 +185,7 @@ export default function ProductDetail() {
           (sum: number, review: Review) => sum + review.rating,
           0,
         ) / reviews.length
-      : parseFloat(product.rating || "0");
+      : product?.rating || 0;
 
   const handleAddToCart = () => {
     addToCart(product.id, quantity);
@@ -133,11 +202,11 @@ export default function ProductDetail() {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-2 text-sm">
-            <Link href="/" className="text-gray-500 hover:text-golden">
+            <Link to="/" className="text-gray-500 hover:text-golden">
               Home
             </Link>
             <span className="text-gray-400">/</span>
-            <Link href="/products" className="text-gray-500 hover:text-golden">
+            <Link to="/products" className="text-gray-500 hover:text-golden">
               Products
             </Link>
             <span className="text-gray-400">/</span>
@@ -148,7 +217,7 @@ export default function ProductDetail() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Link href="/products">
+        <Link to="/products">
           <Button
             variant="ghost"
             className="mb-6 text-charcoal hover:text-golden"
@@ -196,6 +265,13 @@ export default function ProductDetail() {
 
           {/* Product Info */}
           <div className="bg-white rounded-lg shadow-sm p-6">
+            {product.category && (
+              <Link to={`/products?category=${product.category}`}>
+                <Badge variant="secondary" className="mb-3 hover:bg-gray-200 cursor-pointer">
+                  {categories.find(cat => cat._id === product.category)?.name || product.category}
+                </Badge>
+              </Link>
+            )}
             <div className="flex justify-between items-start mb-4">
               <h1 className="text-3xl font-bold text-charcoal">
                 {product.name}
@@ -277,10 +353,7 @@ export default function ProductDetail() {
                   {product?.blouseLength}
                 </span>
               </div>
-              <div>
-                <span className="font-semibold text-charcoal">Occasion:</span>
-                <span className="ml-2 text-gray-600">{product?.occasion}</span>
-              </div>
+
               <div>
                 <span className="font-semibold text-charcoal">Brand:</span>
                 <span className="ml-2 text-gray-600">{product?.brand}</span>
@@ -399,9 +472,58 @@ export default function ProductDetail() {
               value="reviews"
               className="bg-white rounded-lg shadow-sm p-6 mt-4"
             >
-              <h3 className="text-lg font-semibold text-charcoal mb-4">
-                Customer Reviews
-              </h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-charcoal">
+                  Customer Reviews
+                </h3>
+                <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Write Review
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Write a Review</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium">Rating</label>
+                        <div className="flex space-x-1 mt-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-6 w-6 cursor-pointer ${
+                                star <= reviewRating
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "text-gray-300"
+                              }`}
+                              onClick={() => setReviewRating(star)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Comment</label>
+                        <Textarea
+                          value={reviewComment}
+                          onChange={(e) => setReviewComment(e.target.value)}
+                          placeholder="Share your experience with this product..."
+                          className="mt-1"
+                        />
+                      </div>
+                      <Button
+                        onClick={handleSubmitReview}
+                        disabled={submitReviewMutation.isPending}
+                        className="w-full"
+                      >
+                        {submitReviewMutation.isPending ? "Submitting..." : "Submit Review"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               {reviews.length > 0 ? (
                 <div className="space-y-4">
                   {reviews.map((review: Review) => (
@@ -412,13 +534,13 @@ export default function ProductDetail() {
                       <div className="flex items-start space-x-4">
                         <Avatar>
                           <AvatarFallback>
-                            {review.user.username.charAt(0).toUpperCase()}
+                            {review.username.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <span className="font-semibold text-charcoal">
-                              {review.user.username}
+                              {review.username}
                             </span>
                             <div className="flex text-golden">
                               {[...Array(5)].map((_, i) => (
@@ -468,6 +590,23 @@ export default function ProductDetail() {
             </TabsContent>
           </Tabs>
         </div>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-charcoal mb-8">
+              More from {categories.find(cat => cat._id === product?.category)?.name || 'this category'}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedProducts.slice(0, 4).map((relatedProduct) => (
+                <ProductCard
+                  key={relatedProduct._id}
+                  product={relatedProduct}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

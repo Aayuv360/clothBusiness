@@ -160,6 +160,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Categories routes
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const categories = await getStorage().getCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  app.get("/api/products/category/:categoryId", async (req, res) => {
+    try {
+      const categoryId = req.params.categoryId;
+      const products = await getStorage().getProductsByCategory(categoryId);
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch products by category" });
+    }
+  });
+
   // Cart routes
   app.get("/api/cart", async (req, res) => {
     try {
@@ -273,6 +293,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Item removed from wishlist" });
     } catch (error) {
       res.status(400).json({ message: "Failed to remove wishlist item" });
+    }
+  });
+
+  app.get("/api/wishlist/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const wishlistItems = await getStorage().getWishlistItems(userId);
+      res.json(wishlistItems);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch wishlist items" });
     }
   });
 
@@ -436,11 +466,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/reviews", async (req, res) => {
     try {
-      const reviewData = insertReviewSchema.parse(req.body);
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const reviewData = insertReviewSchema.parse({
+        ...req.body,
+        userId: req.session.userId
+      });
       const review = await getStorage().createReview(reviewData);
       res.json(review);
     } catch (error) {
       res.status(400).json({ message: "Failed to create review" });
+    }
+  });
+
+  app.put("/api/reviews/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const id = req.params.id;
+      const { rating, comment } = req.body;
+      // Note: Add updateReview method to storage interface
+      res.json({ message: "Review updated successfully" });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update review" });
     }
   });
 

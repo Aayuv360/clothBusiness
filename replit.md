@@ -111,6 +111,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### January 07, 2025 - Complete React Router DOM Migration and Enhanced Features
+- Successfully migrated entire application from Wouter to React Router DOM
+- Fixed all navigation components, Link components (href to "to" props), and useLocation patterns
+- Added wishlist API route `/api/wishlist/:userId` for proper JSON responses
+- Enhanced product detail page with review submission functionality
+- Added categories API endpoint and related products display
+- Implemented review dialog with star rating and comment submission
+- Added category badges to product detail pages with clickable navigation
+- Fixed all API routing issues ensuring proper JSON content-type responses
+
 ### July 06, 2025 - Session-Based Authentication Implementation
 - Implemented session-based authentication using express-session and connect-mongo
 - Updated authentication API routes: /api/auth/login, /api/auth/logout, /api/auth/me

@@ -22,7 +22,7 @@ export interface Category {
 
 export interface Product {
   _id?: string;
-  id?: number;
+  id: string;
   name: string;
   sku: string;
   description: string;
@@ -41,6 +41,10 @@ export interface Product {
   isActive: boolean;
   createdAt: Date;
   updatedAt?: Date;
+  rating?: number;
+  blouseLength?: number;
+  length?: number;
+  brand?: string;
 }
 
 export interface Address {
@@ -96,7 +100,7 @@ export interface OrderItem {
 }
 
 export interface Review {
-  _id: string;
+  id: string;
   userId: string;
   productId: string;
   rating: number;
