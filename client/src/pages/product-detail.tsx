@@ -16,19 +16,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ProductCard from "@/components/product/product-card";
 import { useCart } from "@/hooks/use-cart";
-import { useAuth } from "@/hooks/use-auth";
 import { animatePageEntry } from "@/lib/animations";
 import type { Product, Review } from "@shared/schema";
 
 export default function ProductDetail() {
-  const [, params] = useParams("/product/:id");
   const pageRef = useRef<HTMLDivElement>(null);
-  const productId = params?.id;
+  const params = useParams();
+  const productId = params.id;
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -50,11 +48,6 @@ export default function ProductDetail() {
   const { data: reviews = [] } = useQuery({
     queryKey: ["/api/reviews", productId],
     enabled: !!productId,
-  });
-
-  const { data: relatedProducts = [] } = useQuery({
-    queryKey: ["/api/products", { categoryId: product?.categoryId }],
-    enabled: !!product?.categoryId,
   });
 
   useEffect(() => {
@@ -111,10 +104,9 @@ export default function ProductDetail() {
     );
   }
 
-  const discount = product.originalPrice
+  const discount = product.costPrice
     ? Math.round(
-        (1 - parseFloat(product.price) / parseFloat(product.originalPrice)) *
-          100,
+        (1 - parseFloat(product.price) / parseFloat(product.costPrice)) * 100,
       )
     : 0;
 
@@ -134,10 +126,6 @@ export default function ProductDetail() {
     addToCart(product.id, quantity);
     window.location.href = "/checkout";
   };
-
-  const filteredRelatedProducts = relatedProducts
-    .filter((p: Product) => p.id !== product.id)
-    .slice(0, 4);
 
   return (
     <div ref={pageRef} className="min-h-screen bg-gray-50">
@@ -257,10 +245,10 @@ export default function ProductDetail() {
               <span className="text-4xl font-bold text-charcoal">
                 ₹{product.price}
               </span>
-              {product.originalPrice && (
+              {product.costPrice && (
                 <>
                   <span className="text-xl text-gray-500 line-through ml-3">
-                    ₹{product.originalPrice}
+                    ₹{product.costPrice}
                   </span>
                   <Badge className="bg-green-100 text-green-800 ml-3">
                     {discount}% OFF
@@ -281,32 +269,32 @@ export default function ProductDetail() {
               </div>
               <div>
                 <span className="font-semibold text-charcoal">Length:</span>
-                <span className="ml-2 text-gray-600">{product.length}</span>
+                <span className="ml-2 text-gray-600">{product?.length}</span>
               </div>
               <div>
                 <span className="font-semibold text-charcoal">Blouse:</span>
                 <span className="ml-2 text-gray-600">
-                  {product.blouseLength}
+                  {product?.blouseLength}
                 </span>
               </div>
               <div>
                 <span className="font-semibold text-charcoal">Occasion:</span>
-                <span className="ml-2 text-gray-600">{product.occasion}</span>
+                <span className="ml-2 text-gray-600">{product?.occasion}</span>
               </div>
               <div>
                 <span className="font-semibold text-charcoal">Brand:</span>
-                <span className="ml-2 text-gray-600">{product.brand}</span>
+                <span className="ml-2 text-gray-600">{product?.brand}</span>
               </div>
             </div>
 
             {/* Stock Status */}
-            {product.inStock !== undefined && (
+            {product.stockQuantity !== undefined && (
               <div className="mb-6">
-                {product.inStock === 0 ? (
+                {product.stockQuantity === 0 ? (
                   <Badge variant="destructive">Out of Stock</Badge>
-                ) : product.inStock < 5 ? (
+                ) : product.stockQuantity < 5 ? (
                   <Badge className="bg-orange-100 text-orange-800">
-                    Only {product.inStock} left in stock
+                    Only {product.stockQuantity} left in stock
                   </Badge>
                 ) : (
                   <Badge className="bg-green-100 text-green-800">
@@ -337,7 +325,8 @@ export default function ProductDetail() {
                   onClick={() => setQuantity(quantity + 1)}
                   className="h-10 w-10 p-0"
                   disabled={
-                    product.inStock !== undefined && quantity >= product.inStock
+                    product.stockQuantity !== undefined &&
+                    quantity >= product.stockQuantity
                   }
                 >
                   <Plus className="h-4 w-4" />
@@ -349,7 +338,7 @@ export default function ProductDetail() {
             <div className="flex space-x-4 mb-6">
               <Button
                 onClick={handleAddToCart}
-                disabled={isAddingToCart || product.inStock === 0}
+                disabled={isAddingToCart || product.stockQuantity === 0}
                 className="flex-1 bg-golden hover:bg-yellow-600 text-charcoal py-3 font-semibold"
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
@@ -358,7 +347,7 @@ export default function ProductDetail() {
 
               <Button
                 onClick={handleBuyNow}
-                disabled={product.inStock === 0}
+                disabled={product.stockQuantity === 0}
                 className="flex-1 bg-charcoal hover:bg-gray-800 text-white py-3 font-semibold"
               >
                 Buy Now
@@ -479,20 +468,6 @@ export default function ProductDetail() {
             </TabsContent>
           </Tabs>
         </div>
-
-        {/* Related Products */}
-        {filteredRelatedProducts.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-charcoal mb-8">
-              You might also like
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredRelatedProducts.map((relatedProduct: Product) => (
-                <ProductCard key={relatedProduct.id} product={relatedProduct} />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

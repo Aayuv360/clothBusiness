@@ -1,32 +1,61 @@
-import mongoose from 'mongoose';
-import { 
-  User, Category, Product, Address, CartItem, WishlistItem, 
-  Order, OrderItem, Review,
-  IUser, ICategory, IProduct, IAddress, ICartItem, IWishlistItem,
-  IOrder, IOrderItem, IReview
-} from '../shared/models';
-import type { 
-  User as UserType, Category as CategoryType, Product as ProductType, 
-  Address as AddressType, CartItem as CartItemType, WishlistItem as WishlistItemType,
-  Order as OrderType, OrderItem as OrderItemType, Review as ReviewType,
-  InsertUser, InsertCategory, InsertProduct, InsertAddress, 
-  InsertCartItem, InsertWishlistItem, InsertOrder, InsertOrderItem, InsertReview
-} from '@shared/schema';
+import mongoose from "mongoose";
+import {
+  User,
+  Category,
+  Product,
+  Address,
+  CartItem,
+  WishlistItem,
+  Order,
+  OrderItem,
+  Review,
+  IUser,
+  ICategory,
+  IProduct,
+  IAddress,
+  ICartItem,
+  IWishlistItem,
+  IOrder,
+  IOrderItem,
+  IReview,
+} from "../shared/models";
+import type {
+  User as UserType,
+  Category as CategoryType,
+  Product as ProductType,
+  Address as AddressType,
+  CartItem as CartItemType,
+  WishlistItem as WishlistItemType,
+  Order as OrderType,
+  OrderItem as OrderItemType,
+  Review as ReviewType,
+  InsertUser,
+  InsertCategory,
+  InsertProduct,
+  InsertAddress,
+  InsertCartItem,
+  InsertWishlistItem,
+  InsertOrder,
+  InsertOrderItem,
+  InsertReview,
+} from "@shared/schema";
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://sathishreddyk0337:MmNdrMQ7lWp0I5m1@cluster0.fs4vkd7.mongodb.net/clothbusiness';
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  "mongodb+srv://sathishreddyk0337:MmNdrMQ7lWp0I5m1@cluster0.fs4vkd7.mongodb.net/clothbusiness";
 
 export async function connectDB() {
   try {
-    console.log('Attempting to connect to MongoDB...');
+    console.log("Attempting to connect to MongoDB...");
     await mongoose.connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
       socketTimeoutMS: 45000, // Close sockets after 45 seconds
-      bufferCommands: false // Disable mongoose buffering
+      bufferCommands: false, // Disable mongoose buffering
     });
-    console.log('Connected to MongoDB successfully');
+    console.log("Connected to MongoDB successfully");
   } catch (error) {
-    console.error('MongoDB connection error:', error);
-    console.log('Continuing without database connection - using fallback');
+    console.error("MongoDB connection error:", error);
+    console.log("Continuing without database connection - using fallback");
     return; // Don't exit, continue with fallback
   }
 }
@@ -49,7 +78,10 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<UserType | undefined>;
   getUserByUsername(username: string): Promise<UserType | undefined>;
   createUser(user: InsertUser): Promise<UserType>;
-  updateUser(id: string, user: Partial<InsertUser>): Promise<UserType | undefined>;
+  updateUser(
+    id: string,
+    user: Partial<InsertUser>,
+  ): Promise<UserType | undefined>;
 
   // Categories
   getCategories(): Promise<CategoryType[]>;
@@ -58,42 +90,69 @@ export interface IStorage {
   createCategory(category: InsertCategory): Promise<CategoryType>;
 
   // Products
-  getProducts(filters?: { categoryId?: string; minPrice?: number; maxPrice?: number; fabric?: string; color?: string; search?: string }): Promise<ProductType[]>;
+  getProducts(filters?: {
+    categoryId?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    fabric?: string;
+    color?: string;
+    search?: string;
+  }): Promise<ProductType[]>;
   getProduct(id: string): Promise<ProductType | undefined>;
   getProductsByCategory(categoryId: string): Promise<ProductType[]>;
   getFeaturedProducts(): Promise<ProductType[]>;
   searchProducts(query: string): Promise<ProductType[]>;
   createProduct(product: InsertProduct): Promise<ProductType>;
-  updateProduct(id: string, product: Partial<InsertProduct>): Promise<ProductType | undefined>;
+  updateProduct(
+    id: string,
+    product: Partial<InsertProduct>,
+  ): Promise<ProductType | undefined>;
 
   // Addresses
   getUserAddresses(userId: string): Promise<AddressType[]>;
   getAddress(id: string): Promise<AddressType | undefined>;
   createAddress(address: InsertAddress): Promise<AddressType>;
-  updateAddress(id: string, address: Partial<InsertAddress>): Promise<AddressType | undefined>;
+  updateAddress(
+    id: string,
+    address: Partial<InsertAddress>,
+  ): Promise<AddressType | undefined>;
   deleteAddress(id: string): Promise<boolean>;
 
   // Cart
-  getCartItems(userId: string): Promise<(CartItemType & { product: ProductType })[]>;
+  getCartItems(
+    userId: string,
+  ): Promise<(CartItemType & { product: ProductType })[]>;
   addToCart(cartItem: InsertCartItem): Promise<CartItemType>;
-  updateCartItem(id: string, quantity: number): Promise<CartItemType | undefined>;
+  updateCartItem(
+    id: string,
+    quantity: number,
+  ): Promise<CartItemType | undefined>;
   removeFromCart(id: string): Promise<boolean>;
   clearCart(userId: string): Promise<boolean>;
 
   // Wishlist
-  getWishlistItems(userId: string): Promise<(WishlistItemType & { product: ProductType })[]>;
+  getWishlistItems(
+    userId: string,
+  ): Promise<(WishlistItemType & { product: ProductType })[]>;
   addToWishlist(wishlistItem: InsertWishlistItem): Promise<WishlistItemType>;
   removeFromWishlist(id: string): Promise<boolean>;
   isInWishlist(userId: string, productId: string): Promise<boolean>;
 
   // Orders
   getOrders(userId: string): Promise<OrderType[]>;
-  getOrder(id: string): Promise<(OrderType & { items: (OrderItemType & { product: ProductType })[] }) | undefined>;
+  getOrder(
+    id: string,
+  ): Promise<
+    | (OrderType & { items: (OrderItemType & { product: ProductType })[] })
+    | undefined
+  >;
   createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<OrderType>;
   updateOrderStatus(id: string, status: string): Promise<OrderType | undefined>;
 
   // Reviews
-  getProductReviews(productId: string): Promise<(ReviewType & { user: Pick<UserType, 'username'> })[]>;
+  getProductReviews(
+    productId: string,
+  ): Promise<(ReviewType & { user: Pick<UserType, "username"> })[]>;
   createReview(review: InsertReview): Promise<ReviewType>;
 }
 
@@ -107,7 +166,7 @@ export class MongoStorage implements IStorage {
     try {
       // Check if we're connected to MongoDB
       if (mongoose.connection.readyState !== 1) {
-        console.log('MongoDB not connected, skipping seed data');
+        console.log("MongoDB not connected, skipping seed data");
         return;
       }
 
@@ -117,11 +176,41 @@ export class MongoStorage implements IStorage {
 
       // Seed categories
       const categories = [
-        { name: 'Silk Sarees', slug: 'silk-sarees', description: 'Luxurious silk sarees for special occasions', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500' },
-        { name: 'Cotton Sarees', slug: 'cotton-sarees', description: 'Comfortable everyday cotton sarees', image: 'https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=500' },
-        { name: 'Designer Sarees', slug: 'designer-sarees', description: 'Trendy designer sarees', image: 'https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=500' },
-        { name: 'Wedding Sarees', slug: 'wedding-sarees', description: 'Grand wedding collection', image: 'https://images.unsplash.com/photo-1605481024394-39126949ebe4?w=500' },
-        { name: 'Banarasi Sarees', slug: 'banarasi-sarees', description: 'Traditional Banarasi weaves', image: 'https://images.unsplash.com/photo-1588066892455-7b88c1dc9d6b?w=500' }
+        {
+          name: "Silk Sarees",
+          slug: "silk-sarees",
+          description: "Luxurious silk sarees for special occasions",
+          image:
+            "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500",
+        },
+        {
+          name: "Cotton Sarees",
+          slug: "cotton-sarees",
+          description: "Comfortable everyday cotton sarees",
+          image:
+            "https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=500",
+        },
+        {
+          name: "Designer Sarees",
+          slug: "designer-sarees",
+          description: "Trendy designer sarees",
+          image:
+            "https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=500",
+        },
+        {
+          name: "Wedding Sarees",
+          slug: "wedding-sarees",
+          description: "Grand wedding collection",
+          image:
+            "https://images.unsplash.com/photo-1605481024394-39126949ebe4?w=500",
+        },
+        {
+          name: "Banarasi Sarees",
+          slug: "banarasi-sarees",
+          description: "Traditional Banarasi weaves",
+          image:
+            "https://images.unsplash.com/photo-1588066892455-7b88c1dc9d6b?w=500",
+        },
       ];
 
       const createdCategories = await Category.insertMany(categories);
@@ -129,77 +218,83 @@ export class MongoStorage implements IStorage {
       // Seed products with sm_products schema
       const products = [
         {
-          name: 'Royal Red Silk Saree',
-          sku: 'RSS001',
-          description: 'Exquisite red silk saree with golden border, perfect for weddings and special occasions.',
-          category: 'silk',
-          price: '15999',
-          costPrice: '12000',
+          name: "Royal Red Silk Saree",
+          sku: "RSS001",
+          description:
+            "Exquisite red silk saree with golden border, perfect for weddings and special occasions.",
+          category: "silk",
+          price: "15999",
+          costPrice: "12000",
           stockQuantity: 25,
           minStockLevel: 5,
-          fabric: 'Pure Silk',
-          color: 'Red',
-          size: 'L',
-          sizes: ['S', 'M', 'L', 'XL'],
-          colors: ['Red', 'Maroon', 'Burgundy'],
+          fabric: "Pure Silk",
+          color: "Red",
+          size: "L",
+          sizes: ["S", "M", "L", "XL"],
+          colors: ["Red", "Maroon", "Burgundy"],
           images: [
-            'https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1605481024394-39126949ebe4?w=800&h=600&fit=crop'
+            "https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1605481024394-39126949ebe4?w=800&h=600&fit=crop",
           ],
-          imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800&h=600&fit=crop',
+          imageUrl:
+            "https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800&h=600&fit=crop",
           isActive: true,
-          id: 482481
+          id: 482481,
         },
         {
-          name: 'Elegant Blue Cotton Saree',
-          sku: 'BCS002',
-          description: 'Comfortable blue cotton saree with traditional prints, ideal for daily wear.',
-          category: 'cotton',
-          price: '2499',
-          costPrice: '1800',
+          name: "Elegant Blue Cotton Saree",
+          sku: "BCS002",
+          description:
+            "Comfortable blue cotton saree with traditional prints, ideal for daily wear.",
+          category: "cotton",
+          price: "2499",
+          costPrice: "1800",
           stockQuantity: 50,
           minStockLevel: 10,
-          fabric: 'Cotton',
-          color: 'Blue',
-          size: 'M',
-          sizes: ['S', 'M', 'L'],
-          colors: ['Blue', 'Navy', 'Sky Blue'],
+          fabric: "Cotton",
+          color: "Blue",
+          size: "M",
+          sizes: ["S", "M", "L"],
+          colors: ["Blue", "Navy", "Sky Blue"],
           images: [
-            'https://images.unsplash.com/photo-1588066892455-7b88c1dc9d6b?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=800&h=600&fit=crop'
+            "https://images.unsplash.com/photo-1588066892455-7b88c1dc9d6b?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=800&h=600&fit=crop",
           ],
-          imageUrl: 'https://images.unsplash.com/photo-1588066892455-7b88c1dc9d6b?w=800&h=600&fit=crop',
+          imageUrl:
+            "https://images.unsplash.com/photo-1588066892455-7b88c1dc9d6b?w=800&h=600&fit=crop",
           isActive: true,
-          id: 482482
+          id: 482482,
         },
         {
-          name: 'Designer Golden Banarasi',
-          sku: 'DGB003',
-          description: 'Traditional Banarasi saree with intricate golden work, perfect for festivals.',
-          category: 'banarasi',
-          price: '8999',
-          costPrice: '6500',
+          name: "Designer Golden Banarasi",
+          sku: "DGB003",
+          description:
+            "Traditional Banarasi saree with intricate golden work, perfect for festivals.",
+          category: "banarasi",
+          price: "8999",
+          costPrice: "6500",
           stockQuantity: 15,
           minStockLevel: 3,
-          fabric: 'Silk',
-          color: 'Golden',
-          size: 'L',
-          sizes: ['M', 'L', 'XL'],
-          colors: ['Golden', 'Silver', 'Bronze'],
+          fabric: "Silk",
+          color: "Golden",
+          size: "L",
+          sizes: ["M", "L", "XL"],
+          colors: ["Golden", "Silver", "Bronze"],
           images: [
-            'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800&h=600&fit=crop'
+            "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1594736797933-d0401ba871ff?w=800&h=600&fit=crop",
           ],
-          imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&h=600&fit=crop',
+          imageUrl:
+            "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&h=600&fit=crop",
           isActive: true,
-          id: 482483
-        }
+          id: 482483,
+        },
       ];
 
       await Product.insertMany(products);
-      console.log('MongoDB seeded with initial data');
+      console.log("MongoDB seeded with initial data");
     } catch (error) {
-      console.error('Error seeding data:', error);
+      console.error("Error seeding data:", error);
     }
   }
 
@@ -225,7 +320,10 @@ export class MongoStorage implements IStorage {
     return convertDoc<UserType>(user);
   }
 
-  async updateUser(id: string, userData: Partial<InsertUser>): Promise<UserType | undefined> {
+  async updateUser(
+    id: string,
+    userData: Partial<InsertUser>,
+  ): Promise<UserType | undefined> {
     const user = await User.findByIdAndUpdate(id, userData, { new: true });
     return user ? convertDoc<UserType>(user) : undefined;
   }
@@ -233,7 +331,7 @@ export class MongoStorage implements IStorage {
   // Category methods
   async getCategories(): Promise<CategoryType[]> {
     const categories = await Category.find();
-    return categories.map(cat => convertDoc<CategoryType>(cat));
+    return categories.map((cat) => convertDoc<CategoryType>(cat));
   }
 
   async getCategory(id: string): Promise<CategoryType | undefined> {
@@ -252,7 +350,7 @@ export class MongoStorage implements IStorage {
     return convertDoc<CategoryType>(category);
   }
 
-  // Product methods  
+  // Product methods
   async getProducts(filters?: any): Promise<ProductType[]> {
     let query: any = { isActive: true };
 
@@ -261,16 +359,16 @@ export class MongoStorage implements IStorage {
     }
     if (filters?.search) {
       query.$or = [
-        { name: { $regex: filters.search, $options: 'i' } },
-        { description: { $regex: filters.search, $options: 'i' } },
-        { sku: { $regex: filters.search, $options: 'i' } }
+        { name: { $regex: filters.search, $options: "i" } },
+        { description: { $regex: filters.search, $options: "i" } },
+        { sku: { $regex: filters.search, $options: "i" } },
       ];
     }
     if (filters?.fabric) {
-      query.fabric = { $regex: filters.fabric, $options: 'i' };
+      query.fabric = { $regex: filters.fabric, $options: "i" };
     }
     if (filters?.color) {
-      query.color = { $regex: filters.color, $options: 'i' };
+      query.color = { $regex: filters.color, $options: "i" };
     }
     if (filters?.minPrice) {
       query.price = { $gte: filters.minPrice };
@@ -280,7 +378,7 @@ export class MongoStorage implements IStorage {
     }
 
     const products = await Product.find(query);
-    return products.map(product => convertDoc<ProductType>(product));
+    return products.map((product) => convertDoc<ProductType>(product));
   }
 
   async getProduct(id: string): Promise<ProductType | undefined> {
@@ -289,27 +387,30 @@ export class MongoStorage implements IStorage {
   }
 
   async getProductsByCategory(categoryId: string): Promise<ProductType[]> {
-    const products = await Product.find({ category: categoryId, isActive: true });
-    return products.map(product => convertDoc<ProductType>(product));
+    const products = await Product.find({
+      category: categoryId,
+      isActive: true,
+    });
+    return products.map((product) => convertDoc<ProductType>(product));
   }
 
   async getFeaturedProducts(): Promise<ProductType[]> {
     const products = await Product.find({ isActive: true }).limit(8);
-    return products.map(product => convertDoc<ProductType>(product));
+    return products.map((product) => convertDoc<ProductType>(product));
   }
 
   async searchProducts(query: string): Promise<ProductType[]> {
     const products = await Product.find({
       $or: [
-        { name: { $regex: query, $options: 'i' } },
-        { description: { $regex: query, $options: 'i' } },
-        { sku: { $regex: query, $options: 'i' } },
-        { fabric: { $regex: query, $options: 'i' } },
-        { color: { $regex: query, $options: 'i' } }
+        { name: { $regex: query, $options: "i" } },
+        { description: { $regex: query, $options: "i" } },
+        { sku: { $regex: query, $options: "i" } },
+        { fabric: { $regex: query, $options: "i" } },
+        { color: { $regex: query, $options: "i" } },
       ],
-      isActive: true
+      isActive: true,
     });
-    return products.map(product => convertDoc<ProductType>(product));
+    return products.map((product) => convertDoc<ProductType>(product));
   }
 
   async createProduct(productData: InsertProduct): Promise<ProductType> {
@@ -318,15 +419,20 @@ export class MongoStorage implements IStorage {
     return convertDoc<ProductType>(product);
   }
 
-  async updateProduct(id: string, productData: Partial<InsertProduct>): Promise<ProductType | undefined> {
-    const product = await Product.findByIdAndUpdate(id, productData, { new: true });
+  async updateProduct(
+    id: string,
+    productData: Partial<InsertProduct>,
+  ): Promise<ProductType | undefined> {
+    const product = await Product.findByIdAndUpdate(id, productData, {
+      new: true,
+    });
     return product ? convertDoc<ProductType>(product) : undefined;
   }
 
   // Address methods
   async getUserAddresses(userId: string): Promise<AddressType[]> {
     const addresses = await Address.find({ userId });
-    return addresses.map(addr => convertDoc<AddressType>(addr));
+    return addresses.map((addr) => convertDoc<AddressType>(addr));
   }
 
   async getAddress(id: string): Promise<AddressType | undefined> {
@@ -340,8 +446,13 @@ export class MongoStorage implements IStorage {
     return convertDoc<AddressType>(address);
   }
 
-  async updateAddress(id: string, addressData: Partial<InsertAddress>): Promise<AddressType | undefined> {
-    const address = await Address.findByIdAndUpdate(id, addressData, { new: true });
+  async updateAddress(
+    id: string,
+    addressData: Partial<InsertAddress>,
+  ): Promise<AddressType | undefined> {
+    const address = await Address.findByIdAndUpdate(id, addressData, {
+      new: true,
+    });
     return address ? convertDoc<AddressType>(address) : undefined;
   }
 
@@ -351,29 +462,31 @@ export class MongoStorage implements IStorage {
   }
 
   // Cart methods
-  async getCartItems(userId: string): Promise<(CartItemType & { product: ProductType })[]> {
-    const cartItems = await CartItem.find({ userId }).populate('productId');
-    
+  async getCartItems(
+    userId: string,
+  ): Promise<(CartItemType & { product: ProductType })[]> {
+    const cartItems = await CartItem.find({ userId }).populate("productId");
+
     // Filter out items where populate failed (broken references)
-    const validCartItems = cartItems.filter(item => item.productId !== null);
-    
-    return validCartItems.map(item => {
+    const validCartItems = cartItems.filter((item) => item.productId !== null);
+
+    return validCartItems.map((item) => {
       const converted = convertDoc<CartItemType>(item);
       const product = convertDoc<ProductType>(item.productId);
-      
+
       return {
         ...converted,
-        productId: product._id || product.id || '', // Ensure productId is a string
-        product: product
+        productId: product._id || product.id || "", // Ensure productId is a string
+        product: product,
       };
     });
   }
 
   async addToCart(cartData: InsertCartItem): Promise<CartItemType> {
     // Check if item already exists in cart
-    const existingItem = await CartItem.findOne({ 
-      userId: cartData.userId, 
-      productId: cartData.productId 
+    const existingItem = await CartItem.findOne({
+      userId: cartData.userId,
+      productId: cartData.productId,
     });
 
     if (existingItem) {
@@ -387,8 +500,15 @@ export class MongoStorage implements IStorage {
     return convertDoc<CartItemType>(cartItem);
   }
 
-  async updateCartItem(id: string, quantity: number): Promise<CartItemType | undefined> {
-    const cartItem = await CartItem.findByIdAndUpdate(id, { quantity }, { new: true });
+  async updateCartItem(
+    id: string,
+    quantity: number,
+  ): Promise<CartItemType | undefined> {
+    const cartItem = await CartItem.findByIdAndUpdate(
+      id,
+      { quantity },
+      { new: true },
+    );
     return cartItem ? convertDoc<CartItemType>(cartItem) : undefined;
   }
 
@@ -403,18 +523,24 @@ export class MongoStorage implements IStorage {
   }
 
   // Wishlist methods
-  async getWishlistItems(userId: string): Promise<(WishlistItemType & { product: ProductType })[]> {
-    const wishlistItems = await WishlistItem.find({ userId }).populate('productId');
-    return wishlistItems.map(item => {
+  async getWishlistItems(
+    userId: string,
+  ): Promise<(WishlistItemType & { product: ProductType })[]> {
+    const wishlistItems = await WishlistItem.find({ userId }).populate(
+      "productId",
+    );
+    return wishlistItems.map((item) => {
       const converted = convertDoc<WishlistItemType>(item);
       return {
         ...converted,
-        product: convertDoc<ProductType>(item.productId)
+        product: convertDoc<ProductType>(item.productId),
       };
     });
   }
 
-  async addToWishlist(wishlistData: InsertWishlistItem): Promise<WishlistItemType> {
+  async addToWishlist(
+    wishlistData: InsertWishlistItem,
+  ): Promise<WishlistItemType> {
     const wishlistItem = new WishlistItem(wishlistData);
     await wishlistItem.save();
     return convertDoc<WishlistItemType>(wishlistItem);
@@ -433,54 +559,72 @@ export class MongoStorage implements IStorage {
   // Order methods
   async getOrders(userId: string): Promise<OrderType[]> {
     const orders = await Order.find({ userId }).sort({ createdAt: -1 });
-    return orders.map(order => convertDoc<OrderType>(order));
+    return orders.map((order) => convertDoc<OrderType>(order));
   }
 
-  async getOrder(id: string): Promise<(OrderType & { items: (OrderItemType & { product: ProductType })[] }) | undefined> {
+  async getOrder(
+    id: string,
+  ): Promise<
+    | (OrderType & { items: (OrderItemType & { product: ProductType })[] })
+    | undefined
+  > {
     const order = await Order.findById(id);
     if (!order) return undefined;
 
-    const orderItems = await OrderItem.find({ orderId: id }).populate('productId');
-    const items = orderItems.map(item => {
+    const orderItems = await OrderItem.find({ orderId: id }).populate(
+      "productId",
+    );
+    const items = orderItems.map((item) => {
       const converted = convertDoc<OrderItemType>(item);
       return {
         ...converted,
-        product: convertDoc<ProductType>(item.productId)
+        product: convertDoc<ProductType>(item.productId),
       };
     });
 
     return {
       ...convertDoc<OrderType>(order),
-      items
+      items,
     };
   }
 
-  async createOrder(orderData: InsertOrder, items: InsertOrderItem[]): Promise<OrderType> {
+  async createOrder(
+    orderData: InsertOrder,
+    items: InsertOrderItem[],
+  ): Promise<OrderType> {
     const order = new Order(orderData);
     await order.save();
 
-    const orderItems = items.map(item => ({
+    const orderItems = items.map((item) => ({
       ...item,
-      orderId: order._id
+      orderId: order._id,
     }));
     await OrderItem.insertMany(orderItems);
 
     return convertDoc<OrderType>(order);
   }
 
-  async updateOrderStatus(id: string, status: string): Promise<OrderType | undefined> {
+  async updateOrderStatus(
+    id: string,
+    status: string,
+  ): Promise<OrderType | undefined> {
     const order = await Order.findByIdAndUpdate(id, { status }, { new: true });
     return order ? convertDoc<OrderType>(order) : undefined;
   }
 
   // Review methods
-  async getProductReviews(productId: string): Promise<(ReviewType & { user: Pick<UserType, 'username'> })[]> {
-    const reviews = await Review.find({ productId }).populate('userId', 'username');
-    return reviews.map(review => {
+  async getProductReviews(
+    productId: string,
+  ): Promise<(ReviewType & { user: Pick<UserType, "username"> })[]> {
+    const reviews = await Review.find({ productId }).populate(
+      "userId",
+      "username",
+    );
+    return reviews.map((review) => {
       const converted = convertDoc<ReviewType>(review);
       return {
         ...converted,
-        user: { username: (review.userId as any).username }
+        user: { username: (review.userId as any).username },
       };
     });
   }
