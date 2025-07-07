@@ -927,8 +927,9 @@ export default function Checkout() {
       </div>
 
       {/* Address Modal */}
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
           <DialogTitle>
             {editingAddress ? "Edit Address" : "Add New Address"}
           </DialogTitle>
@@ -1081,6 +1082,7 @@ export default function Checkout() {
           </div>
         </div>
       </DialogContent>
+      </Dialog>
     </div>
   );
 }

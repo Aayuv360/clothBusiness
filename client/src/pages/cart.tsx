@@ -74,7 +74,6 @@ export default function Cart() {
       </div>
     );
   }
-  console.log(user);
   return (
     <div ref={pageRef} className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -91,7 +90,7 @@ export default function Cart() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {cartItems.map((item) => (
+            {cartItems.map((item: any) => (
               <Card key={item?.id} className="bg-white shadow-sm">
                 <CardContent className="p-6">
                   <div className="flex flex-col sm:flex-row gap-6">
@@ -263,8 +262,7 @@ export default function Cart() {
                   </div>
                 </div>
 
-                {/* Checkout Button */}
-                {!user ? (
+                {user ? (
                   <Link href="/checkout">
                     <Button className="w-full bg-golden hover:bg-yellow-600 text-charcoal font-semibold py-3 mb-4">
                       Proceed to Checkout
