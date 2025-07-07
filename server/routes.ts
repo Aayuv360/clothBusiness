@@ -12,7 +12,6 @@ import {
 } from "@shared/schema";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-import { Product } from "../shared/models";
 
 const storage = getStorage();
 
@@ -594,16 +593,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get product ObjectIds for order items
         const orderItems = [];
         for (const item of cartItems) {
-          // Find the product by custom id to get its MongoDB _id
-          const product = await storage.getProduct(item.product.id);
-          if (product) {
-            const productDoc = await Product.findOne({ id: product.id });
-            orderItems.push({
-              productId: productDoc!._id, // Use MongoDB _id ObjectId
-              quantity: item.quantity,
-              price: item.product.price,
-            });
-          }
+          // Use the productId from cart which is already the MongoDB _id
+          orderItems.push({
+            productId: item.productId, // This is already the MongoDB _id from cart
+            quantity: item.quantity,
+            price: item.product.price,
+          });
         }
 
         console.log("Creating order:", {
