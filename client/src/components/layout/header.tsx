@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Search,
   Heart,
@@ -27,7 +27,8 @@ import AuthModal from "@/components/auth/auth-modal";
 import { animateSearch } from "@/lib/animations";
 
 export default function Header() {
-  const [location, setLocation] = useLocation();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -45,7 +46,7 @@ export default function Header() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      setLocation(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
       setIsSearchOpen(false);
     }
@@ -69,28 +70,26 @@ export default function Header() {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href="/">
-                <div className="flex-shrink-0">
-                  <h1 className="text-2xl font-bold text-deep-red">
-                    SareeMart
-                  </h1>
-                </div>
+              <Link to="/" className="flex-shrink-0">
+                <h1 className="text-2xl font-bold text-deep-red">
+                  SareeMart
+                </h1>
               </Link>
 
               {/* Desktop Navigation */}
               <nav className="hidden md:block ml-10">
                 <div className="flex items-baseline space-x-8">
                   {navigation.map((item) => (
-                    <Link key={item.name} href={item.href}>
-                      <a
-                        className={`px-3 py-2 text-sm font-medium transition-colors hover:text-golden ${
-                          location === item.href
-                            ? "text-golden"
-                            : "text-charcoal"
-                        }`}
-                      >
-                        {item.name}
-                      </a>
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`px-3 py-2 text-sm font-medium transition-colors hover:text-golden ${
+                        location.pathname === item.href
+                          ? "text-golden"
+                          : "text-charcoal"
+                      }`}
+                    >
+                      {item.name}
                     </Link>
                   ))}
                 </div>
@@ -131,7 +130,7 @@ export default function Header() {
                 variant="ghost"
                 size="sm"
                 className="text-charcoal hover:text-golden relative"
-                onClick={() => setLocation("/wishlist")}
+                onClick={() => navigate("/wishlist")}
               >
                 <Heart className="h-5 w-5" />
                 <Badge className="absolute -top-2 -right-2 bg-deep-red text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
@@ -144,7 +143,7 @@ export default function Header() {
                 variant="ghost"
                 size="sm"
                 className="text-charcoal hover:text-golden relative"
-                onClick={() => setLocation("/cart")}
+                onClick={() => navigate("/cart")}
               >
                 <ShoppingBag className="h-5 w-5" />
                 {cartCount > 0 && (
@@ -170,21 +169,21 @@ export default function Header() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem
-                      onClick={() => setLocation("/profile")}
+                      onClick={() => navigate("/profile")}
                       className="cursor-pointer"
                     >
                       <Settings className="h-4 w-4 mr-2" />
                       Profile Settings
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => setLocation("/orders")}
+                      onClick={() => navigate("/orders")}
                       className="cursor-pointer"
                     >
                       <ShoppingBag className="h-4 w-4 mr-2" />
                       Order History
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => setLocation("/wishlist")}
+                      onClick={() => navigate("/wishlist")}
                       className="cursor-pointer"
                     >
                       <Heart className="h-4 w-4 mr-2" />
@@ -194,7 +193,7 @@ export default function Header() {
                     <DropdownMenuItem
                       onClick={() => {
                         logout();
-                        setLocation("/");
+                        navigate("/");
                       }}
                       className="cursor-pointer text-red-600 focus:text-red-600"
                     >

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import {
   ShoppingBag,
   Minus,
@@ -21,7 +21,7 @@ export default function Cart() {
   const pageRef = useRef<HTMLDivElement>(null);
   const { cartItems, cartTotal, updateQuantity, removeFromCart, isLoading } =
     useCart();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (pageRef.current) {
@@ -60,7 +60,7 @@ export default function Cart() {
               Looks like you haven't added any beautiful sarees to your cart
               yet. Start shopping to fill it up!
             </p>
-            <Link href="/products">
+            <Link to="/products">
               <Button
                 size="lg"
                 className="bg-golden hover:bg-yellow-600 text-charcoal font-semibold"
@@ -190,7 +190,7 @@ export default function Cart() {
 
             {/* Continue Shopping */}
             <div className="pt-4">
-              <Link href="/products">
+              <Link to="/products">
                 <Button
                   variant="outline"
                   className="text-charcoal border-charcoal hover:bg-charcoal hover:text-white"
@@ -263,14 +263,14 @@ export default function Cart() {
                 </div>
 
                 {user ? (
-                  <Link href="/checkout">
+                  <Link to="/checkout">
                     <Button className="w-full bg-golden hover:bg-yellow-600 text-charcoal font-semibold py-3 mb-4">
                       Proceed to Checkout
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                 ) : (
-                  <Link href="/auth">
+                  <Link to="/auth">
                     <Button className="w-full bg-golden hover:bg-yellow-600 text-charcoal font-semibold py-3 mb-4">
                       Sign In to Checkout
                       <ArrowRight className="ml-2 h-4 w-4" />

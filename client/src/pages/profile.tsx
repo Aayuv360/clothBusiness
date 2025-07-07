@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { User, Edit2, Save, X, Mail, Phone, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { animatePageEntry } from "@/lib/animations";
 
 export default function Profile() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
@@ -23,7 +23,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (!user) {
-      setLocation("/");
+      navigate("/");
       return;
     }
 
@@ -39,7 +39,7 @@ export default function Profile() {
     if (container) {
       animatePageEntry(container as HTMLElement);
     }
-  }, [user, setLocation]);
+  }, [user, navigate]);
 
   const handleSave = async () => {
     try {
@@ -230,21 +230,21 @@ export default function Profile() {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => setLocation("/orders")}
+                  onClick={() => navigate("/orders")}
                 >
                   View Order History
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => setLocation("/wishlist")}
+                  onClick={() => navigate("/wishlist")}
                 >
                   My Wishlist
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => setLocation("/checkout")}
+                  onClick={() => navigate("/checkout")}
                 >
                   Manage Addresses
                 </Button>

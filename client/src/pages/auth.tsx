@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Phone, Mail, Lock, User, ArrowRight, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { animatePageEntry } from "@/lib/animations";
 
 export default function Auth() {
-  const [, setLocation] = useLocation();
+  const location = useLocation();
+  const navigate = useNavigate();
   const pageRef = useRef<HTMLDivElement>(null);
   const { user, login, register, sendOTP, verifyOTP } = useAuth();
   const { toast } = useToast();
@@ -32,14 +33,14 @@ export default function Auth() {
 
   useEffect(() => {
     if (user) {
-      setLocation("/");
+      navigate("/");
       return;
     }
 
     if (pageRef.current) {
       animatePageEntry(pageRef.current);
     }
-  }, [user, setLocation]);
+  }, [user, navigate]);
 
   const handleOTPLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +56,7 @@ export default function Auth() {
       // Verify OTP
       const result = await verifyOTP(phoneNumber, otp);
       if (result.success) {
-        setLocation("/");
+        navigate("/");
       }
     }
 
@@ -68,7 +69,7 @@ export default function Auth() {
 
     const result = await login(loginData.email, loginData.password);
     if (result.success) {
-      setLocation("/");
+      navigate("/");
     }
 
     setIsLoading(false);
@@ -104,7 +105,7 @@ export default function Auth() {
     });
 
     if (result.success) {
-      setLocation("/");
+      navigate("/");
     }
 
     setIsLoading(false);

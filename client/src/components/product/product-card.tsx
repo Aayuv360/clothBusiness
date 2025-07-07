@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { Heart, Star, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,7 +52,7 @@ export default function ProductCard({
 
   return (
     <Card className="product-card group cursor-pointer bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-      <Link href={`/product/${product.id || product._id}`}>
+      <Link to={`/product/${product.id || product._id}`}>
         <div className="relative">
           <img
             src={product.imageUrl || product.images?.[0]}

@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Facebook, Instagram, Twitter, MessageCircle, ArrowUp } from 'lucide-react';
@@ -54,23 +54,23 @@ export default function Footer() {
               <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/about">
-                    <a className="text-gray-300 hover:text-golden transition-colors">About Us</a>
+                  <Link to="/about" className="text-gray-300 hover:text-golden transition-colors">
+                    About Us
                   </Link>
                 </li>
                 <li>
-                  <Link href="/size-guide">
-                    <a className="text-gray-300 hover:text-golden transition-colors">Size Guide</a>
+                  <Link to="/size-guide" className="text-gray-300 hover:text-golden transition-colors">
+                    Size Guide
                   </Link>
                 </li>
                 <li>
-                  <Link href="/care">
-                    <a className="text-gray-300 hover:text-golden transition-colors">Care Instructions</a>
+                  <Link to="/care" className="text-gray-300 hover:text-golden transition-colors">
+                    Care Instructions
                   </Link>
                 </li>
                 <li>
-                  <Link href="/bulk-orders">
-                    <a className="text-gray-300 hover:text-golden transition-colors">Bulk Orders</a>
+                  <Link to="/bulk-orders" className="text-gray-300 hover:text-golden transition-colors">
+                    Bulk Orders
                   </Link>
                 </li>
               </ul>
@@ -81,23 +81,23 @@ export default function Footer() {
               <h4 className="text-lg font-semibold mb-4">Customer Service</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/contact">
-                    <a className="text-gray-300 hover:text-golden transition-colors">Contact Us</a>
+                  <Link to="/contact" className="text-gray-300 hover:text-golden transition-colors">
+                    Contact Us
                   </Link>
                 </li>
                 <li>
-                  <Link href="/shipping">
-                    <a className="text-gray-300 hover:text-golden transition-colors">Shipping Info</a>
+                  <Link to="/shipping" className="text-gray-300 hover:text-golden transition-colors">
+                    Shipping Info
                   </Link>
                 </li>
                 <li>
-                  <Link href="/returns">
-                    <a className="text-gray-300 hover:text-golden transition-colors">Returns & Exchanges</a>
+                  <Link to="/returns" className="text-gray-300 hover:text-golden transition-colors">
+                    Returns & Exchanges
                   </Link>
                 </li>
                 <li>
-                  <Link href="/track">
-                    <a className="text-gray-300 hover:text-golden transition-colors">Track Your Order</a>
+                  <Link to="/track" className="text-gray-300 hover:text-golden transition-colors">
+                    Track Your Order
                   </Link>
                 </li>
               </ul>
@@ -129,12 +129,12 @@ export default function Footer() {
           <div className="border-t border-gray-700 mt-8 pt-8 text-center">
             <p className="text-gray-300">
               &copy; 2024 SareeMart. All rights reserved. |{' '}
-              <Link href="/privacy">
-                <a className="hover:text-golden">Privacy Policy</a>
+              <Link to="/privacy" className="hover:text-golden">
+                Privacy Policy
               </Link>{' '}
               |{' '}
-              <Link href="/terms">
-                <a className="hover:text-golden">Terms of Service</a>
+              <Link to="/terms" className="hover:text-golden">
+                Terms of Service
               </Link>
             </p>
           </div>

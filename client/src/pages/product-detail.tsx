@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useRoute, Link } from "wouter";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -26,7 +26,7 @@ import { animatePageEntry } from "@/lib/animations";
 import type { Product, Review } from "@shared/schema";
 
 export default function ProductDetail() {
-  const [, params] = useRoute("/product/:id");
+  const [, params] = useParams("/product/:id");
   const pageRef = useRef<HTMLDivElement>(null);
   const productId = params?.id;
 

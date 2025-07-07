@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { Heart, ShoppingCart, Trash2, ArrowRight, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -128,7 +128,7 @@ export default function Wishlist() {
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
               Sign in to view your wishlist and save your favorite sarees.
             </p>
-            <Link href="/auth">
+            <Link to="/auth">
               <Button
                 size="lg"
                 className="bg-golden hover:bg-yellow-600 text-charcoal font-semibold"
@@ -187,7 +187,7 @@ export default function Wishlist() {
                   Show All Items
                 </Button>
               )}
-              <Link href="/products">
+              <Link to="/products">
                 <Button
                   size="lg"
                   className="bg-golden hover:bg-yellow-600 text-charcoal font-semibold"
@@ -253,7 +253,7 @@ export default function Wishlist() {
             <ShoppingCart className="h-4 w-4 mr-2" />
             Move All to Cart
           </Button>
-          <Link href="/products">
+          <Link to="/products">
             <Button
               variant="outline"
               className="text-charcoal border-charcoal hover:bg-charcoal hover:text-white"

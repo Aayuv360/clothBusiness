@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
@@ -83,7 +83,7 @@ export default function Home() {
             and designer sarees from master craftsmen across India
           </p>
           <div className="hero-buttons space-x-4 opacity-0 transform translate-y-8">
-            <Link href="/products">
+            <Link to="/products">
               <Button
                 size="lg"
                 className="bg-golden hover:bg-yellow-600 text-charcoal px-8 py-3 font-semibold transition-all transform hover:scale-105"
@@ -92,7 +92,7 @@ export default function Home() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link href="/products?category=wedding-sarees">
+            <Link to="/products?category=wedding-sarees">
               <Button
                 size="lg"
                 variant="outline"
@@ -176,7 +176,7 @@ export default function Home() {
           )}
 
           <div className="text-center mt-12">
-            <Link href="/products">
+            <Link to="/products">
               <Button
                 size="lg"
                 className="bg-charcoal hover:bg-gray-800 text-white px-8 py-3 font-semibold transition-all transform hover:scale-105"

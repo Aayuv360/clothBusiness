@@ -44,7 +44,7 @@ export interface Product {
 }
 
 export interface Address {
-  _id: string;
+  id: string;
   userId: string;
   name: string;
   phone: string;
