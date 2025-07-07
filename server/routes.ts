@@ -14,6 +14,8 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import { Product } from "../shared/models";
 
+const storage = getStorage();
+
 // Initialize Razorpay with environment variables
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
