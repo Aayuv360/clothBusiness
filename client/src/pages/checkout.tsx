@@ -185,14 +185,16 @@ export default function Checkout() {
       const orderData = await orderResponse.json();
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEYid || "rzp_test_UxXBzl98ySixq7",
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_UxXBzl98ySixq7",
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Saree Store",
         description: "Payment for Saree Order",
-        orderid: orderData.id,
+        order_id: orderData.id,
         handler: async function (response: any) {
           try {
+            console.log("Razorpay response:", response);
+            
             const verifyResponse = await fetch("/api/payment/verify", {
               method: "POST",
               headers: {

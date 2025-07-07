@@ -527,6 +527,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cartItemsCount: cartItems?.length || 0,
       });
 
+      console.log("Raw request body:", req.body);
+
       // Validate required fields
       if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
         return res.status(400).json({
