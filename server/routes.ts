@@ -415,6 +415,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Reviews routes
+  app.get("/api/reviews", async (req, res) => {
+    try {
+      // Return empty array for general reviews endpoint
+      res.json([]);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
   app.get("/api/reviews/:productId", async (req, res) => {
     try {
       const productId = req.params.productId;
