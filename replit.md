@@ -112,7 +112,7 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### January 07, 2025 - Schema Optimization & Payment Fix
-- **Database Schema Cleanup**: Removed redundant `id` field from MongoDB models - now uses native `_id` ObjectId converted to string `id` by convertDoc function
+- **Database Schema Optimization**: Updated convertDoc function to use existing `id` field from database instead of converting `_id`, maintaining data consistency with existing records
 - **Payment Verification Fix**: Fixed Razorpay payment parameter mismatch (`razorpay_orderid` vs `razorpay_order_id`) causing 400 errors
 - **Enhanced Payment Flow**: Added comprehensive debugging logs and validation for payment verification
 - **Product Detail Enhancements**: Review functionality with star ratings, category badges with navigation, related products section

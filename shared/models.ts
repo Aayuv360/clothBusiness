@@ -58,6 +58,7 @@ export interface IProduct extends Document {
   isActive: boolean;
   createdAt: Date;
   updatedAt?: Date;
+  id?: number;
 }
 
 const productSchema = new Schema<IProduct>({
@@ -78,7 +79,8 @@ const productSchema = new Schema<IProduct>({
   imageUrl: { type: String, required: true },
   isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now },
+  id: { type: Number }
 });
 
 export const Product = mongoose.model<IProduct>('sm_products', productSchema);

@@ -21,8 +21,7 @@ export interface Category {
 }
 
 export interface Product {
-  _id?: string;
-  id: string;
+  id: string; // Uses existing id field from database
   name: string;
   sku: string;
   description: string;

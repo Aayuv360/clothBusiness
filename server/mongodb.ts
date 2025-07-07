@@ -64,11 +64,19 @@ export async function connectDB() {
 function convertDoc<T>(doc: any): T {
   if (!doc) return doc;
   const converted = doc.toObject ? doc.toObject() : doc;
-  if (converted._id) {
+  
+  // If document has an existing id field, use that and convert to string
+  if (converted.id !== undefined) {
+    converted.id = converted.id.toString();
+  } else if (converted._id) {
+    // Fallback to _id if no id field exists
     converted.id = converted._id.toString();
-    delete converted._id;
-    delete converted.__v;
   }
+  
+  // Clean up MongoDB fields
+  delete converted._id;
+  delete converted.__v;
+  
   return converted;
 }
 
