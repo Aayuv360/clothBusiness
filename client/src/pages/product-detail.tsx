@@ -20,7 +20,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import ProductCard from "@/components/product/product-card";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
@@ -58,26 +64,35 @@ export default function ProductDetail() {
     enabled: !!productId,
   });
 
-  const { data: reviews = [] } = useQuery<Review[]>({
+  const { data: reviews = [] } = useQuery<any[]>({
     queryKey: ["/api/reviews", productId],
+    queryFn: async () => {
+      if (!productId) throw new Error("Product ID is required");
+      const response = await fetch(`/api/reviews/${productId}`);
+      if (!response.ok) throw new Error("Product not found");
+      return response.json();
+    },
     enabled: !!productId,
-  });
-
-  const { data: categories = [] } = useQuery<Category[]>({
-    queryKey: ["/api/categories"],
   });
 
   const { data: relatedProducts = [] } = useQuery<Product[]>({
     queryKey: ["/api/products/category", product?.category],
+    queryFn: async () => {
+      if (!product?.category) throw new Error("Category not available");
+      const response = await fetch(`/api/products/category/${product.category}`);
+      if (!response.ok) throw new Error("Failed to fetch related products");
+      return response.json();
+    },
     enabled: !!product?.category,
   });
 
   const submitReviewMutation = useMutation({
-    mutationFn: async (reviewData: { productId: string; rating: number; comment: string }) => {
-      return apiRequest('/api/reviews', {
-        method: 'POST',
-        body: JSON.stringify(reviewData),
-      });
+    mutationFn: async (reviewData: {
+      productId: string;
+      rating: number;
+      comment: string;
+    }) => {
+      return apiRequest("POST", "/api/reviews", reviewData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/reviews", productId] });
@@ -108,7 +123,7 @@ export default function ProductDetail() {
       return;
     }
     if (!productId) return;
-    
+
     submitReviewMutation.mutate({
       productId,
       rating: reviewRating,
@@ -217,7 +232,7 @@ export default function ProductDetail() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Link to="/products">
+        <Link to="/">
           <Button
             variant="ghost"
             className="mb-6 text-charcoal hover:text-golden"
@@ -265,13 +280,6 @@ export default function ProductDetail() {
 
           {/* Product Info */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            {product.category && (
-              <Link to={`/products?category=${product.category}`}>
-                <Badge variant="secondary" className="mb-3 hover:bg-gray-200 cursor-pointer">
-                  {categories.find(cat => cat._id === product.category)?.name || product.category}
-                </Badge>
-              </Link>
-            )}
             <div className="flex justify-between items-start mb-4">
               <h1 className="text-3xl font-bold text-charcoal">
                 {product.name}
@@ -476,7 +484,10 @@ export default function ProductDetail() {
                 <h3 className="text-lg font-semibold text-charcoal">
                   Customer Reviews
                 </h3>
-                <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
+                <Dialog
+                  open={isReviewDialogOpen}
+                  onOpenChange={setIsReviewDialogOpen}
+                >
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm">
                       <Edit className="h-4 w-4 mr-2" />
@@ -518,7 +529,9 @@ export default function ProductDetail() {
                         disabled={submitReviewMutation.isPending}
                         className="w-full"
                       >
-                        {submitReviewMutation.isPending ? "Submitting..." : "Submit Review"}
+                        {submitReviewMutation.isPending
+                          ? "Submitting..."
+                          : "Submit Review"}
                       </Button>
                     </div>
                   </DialogContent>
@@ -526,7 +539,7 @@ export default function ProductDetail() {
               </div>
               {reviews.length > 0 ? (
                 <div className="space-y-4">
-                  {reviews.map((review: Review) => (
+                  {reviews.map((review: any) => (
                     <div
                       key={review.id}
                       className="border-b pb-4 last:border-b-0"
@@ -534,13 +547,13 @@ export default function ProductDetail() {
                       <div className="flex items-start space-x-4">
                         <Avatar>
                           <AvatarFallback>
-                            {review.username.charAt(0).toUpperCase()}
+                            {review.user.username.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <span className="font-semibold text-charcoal">
-                              {review.username}
+                              {review.user.username}
                             </span>
                             <div className="flex text-golden">
                               {[...Array(5)].map((_, i) => (
@@ -558,9 +571,9 @@ export default function ProductDetail() {
                           {review.comment && (
                             <p className="text-gray-600">{review.comment}</p>
                           )}
-                          <p className="text-sm text-gray-500 mt-1">
+                          {/* <p className="text-sm text-gray-500 mt-1">
                             {new Date(review.createdAt).toLocaleDateString()}
-                          </p>
+                          </p> */}
                         </div>
                       </div>
                     </div>
@@ -591,12 +604,9 @@ export default function ProductDetail() {
           </Tabs>
         </div>
 
-        {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-2xl font-bold text-charcoal mb-8">
-              More from {categories.find(cat => cat._id === product?.category)?.name || 'this category'}
-            </h2>
+            <h2 className="text-2xl font-bold text-charcoal mb-8"></h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.slice(0, 4).map((relatedProduct) => (
                 <ProductCard

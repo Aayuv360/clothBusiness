@@ -190,6 +190,7 @@ export const insertReviewSchema = z.object({
   productId: z.string().min(1),
   rating: z.number().min(1).max(5),
   comment: z.string().optional(),
+  userName: z.string(),
 });
 
 // Insert types

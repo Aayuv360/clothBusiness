@@ -43,11 +43,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user || user.password !== password) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
-      
+
       // Store user session in database
       req.session.userId = (user as any).id || (user as any)._id?.toString(); // MongoDB converts _id to id in convertDoc
       req.session.user = user;
-      
+
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
@@ -61,7 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (err) {
           return res.status(500).json({ message: "Failed to logout" });
         }
-        res.clearCookie('connect.sid'); // Clear session cookie
+        res.clearCookie("connect.sid"); // Clear session cookie
         res.json({ message: "Logged out successfully" });
       });
     } catch (error) {
@@ -77,7 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password: _, ...userWithoutPassword } = req.session.user!;
       res.json(userWithoutPassword);
     } catch (error) {
-      console.error('Auth check error:', error);
+      console.error("Auth check error:", error);
       res.status(500).json({ message: "Failed to get user info" });
     }
   });
@@ -170,10 +170,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/products/category/:categoryId", async (req, res) => {
+  app.get("/api/products/category/:id", async (req, res) => {
     try {
-      const categoryId = req.params.categoryId;
-      const products = await getStorage().getProductsByCategory(categoryId);
+      const category = req.params.id;
+      const products = await getStorage().getProductsByCategory(category);
       res.json(products);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch products by category" });
@@ -202,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const cartData = insertCartSchema.parse({
         userId: req.session.userId,
         productId,
-        quantity
+        quantity,
       });
       const cartItem = await getStorage().addToCart(cartData);
       res.json(cartItem);
@@ -259,7 +259,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session.userId) {
         return res.status(401).json({ message: "Authentication required" });
       }
-      const wishlistItems = await getStorage().getWishlistItems(req.session.userId);
+      const wishlistItems = await getStorage().getWishlistItems(
+        req.session.userId,
+      );
       res.json(wishlistItems);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch wishlist items" });
@@ -274,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { productId } = req.body;
       const wishlistData = insertWishlistSchema.parse({
         userId: req.session.userId,
-        productId
+        productId,
       });
       const wishlistItem = await getStorage().addToWishlist(wishlistData);
       res.json(wishlistItem);
@@ -444,19 +446,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reviews routes
-  app.get("/api/reviews", async (req, res) => {
+  app.get("/api/reviews/:id", async (req, res) => {
     try {
-      // Return empty array for general reviews endpoint
-      res.json([]);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch reviews" });
-    }
-  });
-
-  app.get("/api/reviews/:productId", async (req, res) => {
-    try {
-      const productId = req.params.productId;
+      const productId = req.params.id;
       const reviews = await getStorage().getProductReviews(productId);
       res.json(reviews);
     } catch (error) {
@@ -471,7 +463,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const reviewData = insertReviewSchema.parse({
         ...req.body,
-        userId: req.session.userId
+        userId: req.session?.user?.id,
+        userName: req.session.user?.username,
       });
       const review = await getStorage().createReview(reviewData);
       res.json(review);
