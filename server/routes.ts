@@ -12,6 +12,7 @@ import {
 } from "@shared/schema";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import { Product } from "../shared/models";
 
 // Initialize Razorpay with environment variables
 const razorpay = new Razorpay({
@@ -588,11 +589,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
         };
 
-        const orderItems = cartItems.map((item: any) => ({
-          productId: item.product._id || item.productId,
-          quantity: item.quantity,
-          price: item.product.price,
-        }));
+        // Get product ObjectIds for order items
+        const orderItems = [];
+        for (const item of cartItems) {
+          // Find the product by custom id to get its MongoDB _id
+          const product = await storage.getProduct(item.product.id);
+          if (product) {
+            const productDoc = await Product.findOne({ id: product.id });
+            orderItems.push({
+              productId: productDoc!._id, // Use MongoDB _id ObjectId
+              quantity: item.quantity,
+              price: item.product.price,
+            });
+          }
+        }
 
         console.log("Creating order:", {
           orderData,

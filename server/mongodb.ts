@@ -484,7 +484,7 @@ export class MongoStorage implements IStorage {
 
       return {
         ...converted,
-        productId: product._id || product.id || "", // Ensure productId is a string
+        productId: item.productId._id.toString(), // Keep the original MongoDB _id for orders
         product: product,
       };
     });
