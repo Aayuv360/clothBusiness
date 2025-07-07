@@ -1,45 +1,61 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'wouter';
-import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Settings } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/hooks/use-auth';
-import { useCart } from '@/hooks/use-cart';
-import CartSidebar from '@/components/cart/cart-sidebar';
-import AuthModal from '@/components/auth/auth-modal';
-import { animateSearch } from '@/lib/animations';
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "wouter";
+import {
+  Search,
+  Heart,
+  ShoppingBag,
+  User,
+  Menu,
+  X,
+  LogOut,
+  Settings,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/use-auth";
+import { useCart } from "@/hooks/use-cart";
+import AuthModal from "@/components/auth/auth-modal";
+import { animateSearch } from "@/lib/animations";
 
 export default function Header() {
   const [location, setLocation] = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { cartCount, openCart } = useCart();
 
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Silk Sarees', href: '/products/silk-sarees' },
-    { name: 'Cotton Sarees', href: '/products/cotton-sarees' },
-    { name: 'Banarasi', href: '/products/banarasi-sarees' },
-    { name: 'Wedding', href: '/products/wedding-sarees' },
+    { name: "Home", href: "/" },
+    { name: "Silk Sarees", href: "/products/silk-sarees" },
+    { name: "Cotton Sarees", href: "/products/cotton-sarees" },
+    { name: "Banarasi", href: "/products/banarasi-sarees" },
+    { name: "Wedding", href: "/products/wedding-sarees" },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       setLocation(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
+      setSearchQuery("");
       setIsSearchOpen(false);
     }
   };
 
   useEffect(() => {
     if (isSearchOpen) {
-      const searchInput = document.querySelector('.search-input') as HTMLElement;
+      const searchInput = document.querySelector(
+        ".search-input",
+      ) as HTMLElement;
       if (searchInput) {
         animateSearch(searchInput);
       }
@@ -55,18 +71,24 @@ export default function Header() {
             <div className="flex items-center">
               <Link href="/">
                 <div className="flex-shrink-0">
-                  <h1 className="text-2xl font-bold text-deep-red">SareeMart</h1>
+                  <h1 className="text-2xl font-bold text-deep-red">
+                    SareeMart
+                  </h1>
                 </div>
               </Link>
-              
+
               {/* Desktop Navigation */}
               <nav className="hidden md:block ml-10">
                 <div className="flex items-baseline space-x-8">
                   {navigation.map((item) => (
                     <Link key={item.name} href={item.href}>
-                      <a className={`px-3 py-2 text-sm font-medium transition-colors hover:text-golden ${
-                        location === item.href ? 'text-golden' : 'text-charcoal'
-                      }`}>
+                      <a
+                        className={`px-3 py-2 text-sm font-medium transition-colors hover:text-golden ${
+                          location === item.href
+                            ? "text-golden"
+                            : "text-charcoal"
+                        }`}
+                      >
                         {item.name}
                       </a>
                     </Link>
@@ -109,7 +131,7 @@ export default function Header() {
                 variant="ghost"
                 size="sm"
                 className="text-charcoal hover:text-golden relative"
-                onClick={() => setLocation('/wishlist')}
+                onClick={() => setLocation("/wishlist")}
               >
                 <Heart className="h-5 w-5" />
                 <Badge className="absolute -top-2 -right-2 bg-deep-red text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
@@ -122,7 +144,7 @@ export default function Header() {
                 variant="ghost"
                 size="sm"
                 className="text-charcoal hover:text-golden relative"
-                onClick={() => setLocation('/cart')}
+                onClick={() => setLocation("/cart")}
               >
                 <ShoppingBag className="h-5 w-5" />
                 {cartCount > 0 && (
@@ -132,8 +154,7 @@ export default function Header() {
                 )}
               </Button>
 
-              {/* User Account */}
-              {isAuthenticated && user ? (
+              {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -142,26 +163,28 @@ export default function Header() {
                       className="text-charcoal hover:text-golden flex items-center space-x-2"
                     >
                       <User className="h-5 w-5" />
-                      <span className="hidden md:block font-medium">{user.username}</span>
+                      <span className="hidden md:block font-medium">
+                        {user.username}
+                      </span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem
-                      onClick={() => setLocation('/profile')}
+                      onClick={() => setLocation("/profile")}
                       className="cursor-pointer"
                     >
                       <Settings className="h-4 w-4 mr-2" />
                       Profile Settings
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => setLocation('/orders')}
+                      onClick={() => setLocation("/orders")}
                       className="cursor-pointer"
                     >
                       <ShoppingBag className="h-4 w-4 mr-2" />
                       Order History
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => setLocation('/wishlist')}
+                      onClick={() => setLocation("/wishlist")}
                       className="cursor-pointer"
                     >
                       <Heart className="h-4 w-4 mr-2" />
@@ -171,7 +194,7 @@ export default function Header() {
                     <DropdownMenuItem
                       onClick={() => {
                         logout();
-                        setLocation('/');
+                        setLocation("/");
                       }}
                       className="cursor-pointer text-red-600 focus:text-red-600"
                     >
@@ -194,7 +217,11 @@ export default function Header() {
               {/* Mobile Menu */}
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="md:hidden text-charcoal">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="md:hidden text-charcoal"
+                  >
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -214,7 +241,11 @@ export default function Header() {
                     {/* Mobile Navigation */}
                     <nav className="flex flex-col space-y-4">
                       {navigation.map((item) => (
-                        <Link key={item.name} href={item.href} className="text-lg font-medium text-charcoal hover:text-golden transition-colors">
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className="text-lg font-medium text-charcoal hover:text-golden transition-colors"
+                        >
                           {item.name}
                         </Link>
                       ))}
@@ -222,21 +253,35 @@ export default function Header() {
 
                     {/* User Actions */}
                     <div className="flex flex-col space-y-4 pt-6 border-t">
-                      {isAuthenticated ? (
+                      {user ? (
                         <>
-                          <p className="text-sm text-gray-600">Welcome, {user?.username}!</p>
-                          <Link href="/orders" className="text-charcoal hover:text-golden">
+                          <p className="text-sm text-gray-600">
+                            Welcome, {user?.username}!
+                          </p>
+                          <Link
+                            href="/orders"
+                            className="text-charcoal hover:text-golden"
+                          >
                             My Orders
                           </Link>
-                          <Link href="/wishlist" className="text-charcoal hover:text-golden">
+                          <Link
+                            href="/wishlist"
+                            className="text-charcoal hover:text-golden"
+                          >
                             Wishlist
                           </Link>
-                          <Link href="/cart" className="text-charcoal hover:text-golden">
+                          <Link
+                            href="/cart"
+                            className="text-charcoal hover:text-golden"
+                          >
                             Cart
                           </Link>
                         </>
                       ) : (
-                        <Button onClick={() => setIsAuthModalOpen(true)} className="bg-golden hover:bg-yellow-600 text-charcoal">
+                        <Button
+                          onClick={() => setIsAuthModalOpen(true)}
+                          className="bg-golden hover:bg-yellow-600 text-charcoal"
+                        >
                           Sign In / Register
                         </Button>
                       )}
@@ -249,11 +294,11 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Cart Sidebar */}
-      <CartSidebar />
-
       {/* Auth Modal */}
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </>
   );
 }

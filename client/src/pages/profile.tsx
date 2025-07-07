@@ -1,45 +1,45 @@
-import { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
-import { User, Edit2, Save, X, Mail, Phone, Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/hooks/use-auth';
-import { useToast } from '@/hooks/use-toast';
-import { animatePageEntry } from '@/lib/animations';
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { User, Edit2, Save, X, Mail, Phone, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { animatePageEntry } from "@/lib/animations";
 
 export default function Profile() {
   const [, setLocation] = useLocation();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    phone: ''
+    username: "",
+    email: "",
+    phone: "",
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setLocation('/');
+    if (!user) {
+      setLocation("/");
       return;
     }
 
     if (user) {
       setFormData({
-        username: user.username || '',
-        email: user.email || '',
-        phone: user.phone || ''
+        username: user.username || "",
+        email: user.email || "",
+        phone: user.phone || "",
       });
     }
 
-    const container = document.querySelector('.profile-container');
+    const container = document.querySelector(".profile-container");
     if (container) {
       animatePageEntry(container as HTMLElement);
     }
-  }, [isAuthenticated, user, setLocation]);
+  }, [user, setLocation]);
 
   const handleSave = async () => {
     try {
@@ -62,15 +62,15 @@ export default function Profile() {
   const handleCancel = () => {
     if (user) {
       setFormData({
-        username: user.username || '',
-        email: user.email || '',
-        phone: user.phone || ''
+        username: user.username || "",
+        email: user.email || "",
+        phone: user.phone || "",
       });
     }
     setIsEditing(false);
   };
 
-  if (!isAuthenticated || !user) {
+  if (!user) {
     return null;
   }
 
@@ -80,7 +80,9 @@ export default function Profile() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-charcoal mb-2">My Profile</h1>
-          <p className="text-gray-600">Manage your account information and preferences</p>
+          <p className="text-gray-600">
+            Manage your account information and preferences
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -103,11 +105,7 @@ export default function Profile() {
                   </Button>
                 ) : (
                   <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCancel}
-                    >
+                    <Button variant="outline" size="sm" onClick={handleCancel}>
                       <X className="h-4 w-4 mr-2" />
                       Cancel
                     </Button>
@@ -130,7 +128,12 @@ export default function Profile() {
                     <Input
                       id="username"
                       value={formData.username}
-                      onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          username: e.target.value,
+                        }))
+                      }
                       className="mt-1"
                     />
                   ) : (
@@ -148,7 +151,12 @@ export default function Profile() {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
                       className="mt-1"
                     />
                   ) : (
@@ -167,14 +175,19 @@ export default function Profile() {
                       id="phone"
                       type="tel"
                       value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          phone: e.target.value,
+                        }))
+                      }
                       className="mt-1"
                       placeholder="Enter your phone number"
                     />
                   ) : (
                     <p className="mt-1 text-sm text-gray-900 py-2 px-3 border rounded-md bg-gray-50 flex items-center">
                       <Phone className="h-4 w-4 mr-2 text-gray-400" />
-                      {user.phone || 'Not provided'}
+                      {user.phone || "Not provided"}
                     </p>
                   )}
                 </div>
@@ -199,8 +212,10 @@ export default function Profile() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Account Status</span>
-                  <span className={`text-sm font-medium ${user.isVerified ? 'text-green-600' : 'text-orange-600'}`}>
-                    {user.isVerified ? 'Verified' : 'Unverified'}
+                  <span
+                    className={`text-sm font-medium ${user.isVerified ? "text-green-600" : "text-orange-600"}`}
+                  >
+                    {user.isVerified ? "Verified" : "Unverified"}
                   </span>
                 </div>
               </CardContent>
@@ -215,21 +230,21 @@ export default function Profile() {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => setLocation('/orders')}
+                  onClick={() => setLocation("/orders")}
                 >
                   View Order History
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => setLocation('/wishlist')}
+                  onClick={() => setLocation("/wishlist")}
                 >
                   My Wishlist
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => setLocation('/checkout')}
+                  onClick={() => setLocation("/checkout")}
                 >
                   Manage Addresses
                 </Button>

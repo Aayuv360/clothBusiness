@@ -29,7 +29,6 @@ function Router() {
           <Route path="/cart" component={Cart} />
           <Route path="/wishlist" component={Wishlist} />
           <Route path="/checkout" component={Checkout} />
-          <Route path="/orders" component={Orders} />
           <Route path="/profile" component={Profile} />
           <Route path="/auth" component={Auth} />
           <Route component={NotFound} />

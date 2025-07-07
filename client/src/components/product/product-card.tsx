@@ -1,35 +1,41 @@
-import { useState } from 'react';
-import { Link } from 'wouter';
-import { Heart, Star, ShoppingCart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { useCart } from '@/hooks/use-cart';
-import { useAuth } from '@/hooks/use-auth';
-import type { Product } from '@shared/schema';
+import { useState } from "react";
+import { Link } from "wouter";
+import { Heart, Star, ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { useCart } from "@/hooks/use-cart";
+import { useAuth } from "@/hooks/use-auth";
+import type { Product } from "@shared/schema";
 
 interface ProductCardProps {
   product: Product;
   onQuickView?: (product: Product) => void;
 }
 
-export default function ProductCard({ product, onQuickView }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onQuickView,
+}: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { addToCart, isAddingToCart } = useCart();
-  const { isAuthenticated } = useAuth();
 
   if (!product) {
     return null;
   }
 
-  const discount = product.costPrice 
-    ? Math.round(((parseFloat(product.costPrice) - parseFloat(product.price)) / parseFloat(product.costPrice)) * 100)
+  const discount = product.costPrice
+    ? Math.round(
+        ((parseFloat(product.costPrice) - parseFloat(product.price)) /
+          parseFloat(product.costPrice)) *
+          100,
+      )
     : 0;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product.id || product._id || '');
+    addToCart(product.id || product._id || "");
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
@@ -50,10 +56,10 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
         <div className="relative">
           <img
             src={product.imageUrl || product.images?.[0]}
-            alt={product.name || 'Product'}
+            alt={product.name || "Product"}
             className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
           />
-          
+
           {/* Wishlist Button */}
           <Button
             variant="ghost"
@@ -61,10 +67,12 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
             className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
             onClick={handleWishlistToggle}
           >
-            <Heart 
+            <Heart
               className={`h-4 w-4 transition-colors ${
-                isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'
-              }`} 
+                isWishlisted
+                  ? "fill-red-500 text-red-500"
+                  : "text-gray-400 hover:text-red-500"
+              }`}
             />
           </Button>
 
@@ -76,14 +84,10 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
               </Badge>
             )}
             {discount > 0 && (
-              <Badge className="bg-deep-red text-white">
-                {discount}% OFF
-              </Badge>
+              <Badge className="bg-deep-red text-white">{discount}% OFF</Badge>
             )}
             {product.stockQuantity > 20 && (
-              <Badge className="bg-green-500 text-white">
-                In Stock
-              </Badge>
+              <Badge className="bg-green-500 text-white">In Stock</Badge>
             )}
           </div>
 
@@ -104,7 +108,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
           <h3 className="font-semibold text-charcoal mb-2 line-clamp-2">
             {product.name}
           </h3>
-          
+
           <p className="text-gray-600 text-sm mb-2">
             {product.fabric} • {product.color}
           </p>
@@ -123,7 +127,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-lg font-bold text-charcoal">
-                ₹{product.price || '0'}
+                ₹{product.price || "0"}
               </span>
               {product.costPrice && discount > 0 && (
                 <span className="text-sm text-gray-500 line-through">
@@ -131,7 +135,7 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
                 </span>
               )}
             </div>
-            
+
             <Button
               size="sm"
               onClick={handleAddToCart}
@@ -151,7 +155,9 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
 
           {/* Stock Status */}
           {product.stockQuantity === 0 && (
-            <p className="text-red-500 text-sm mt-2 font-medium">Out of Stock</p>
+            <p className="text-red-500 text-sm mt-2 font-medium">
+              Out of Stock
+            </p>
           )}
         </CardContent>
       </Link>

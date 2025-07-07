@@ -1,26 +1,26 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link } from 'wouter';
-import { Heart, ShoppingCart, Trash2, ArrowRight, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/use-auth';
-import { useCart } from '@/hooks/use-cart';
-import { useToast } from '@/hooks/use-toast';
-import { animatePageEntry } from '@/lib/animations';
-import { apiRequest } from '@/lib/queryClient';
-import type { WishlistItem, Product } from '@shared/schema';
+import { useEffect, useRef, useState } from "react";
+import { Link } from "wouter";
+import { Heart, ShoppingCart, Trash2, ArrowRight, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { useCart } from "@/hooks/use-cart";
+import { useToast } from "@/hooks/use-toast";
+import { animatePageEntry } from "@/lib/animations";
+import { apiRequest } from "@/lib/queryClient";
+import type { WishlistItem, Product } from "@shared/schema";
 
 type WishlistItemWithProduct = WishlistItem & { product: Product };
 
 export default function Wishlist() {
   const pageRef = useRef<HTMLDivElement>(null);
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { addToCart, isAddingToCart } = useCart();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [filter, setFilter] = useState<string>('all');
+  const [filter, setFilter] = useState<string>("all");
 
   useEffect(() => {
     if (pageRef.current) {
@@ -29,11 +29,13 @@ export default function Wishlist() {
   }, []);
 
   // Fetch wishlist items
-  const { data: wishlistItems = [], isLoading } = useQuery<WishlistItemWithProduct[]>({
-    queryKey: ['/api/wishlist', user?.id],
+  const { data: wishlistItems = [], isLoading } = useQuery<
+    WishlistItemWithProduct[]
+  >({
+    queryKey: ["/api/wishlist", user?.id],
     queryFn: async () => {
       const response = await fetch(`/api/wishlist/${user?.id}`);
-      if (!response.ok) throw new Error('Failed to fetch wishlist');
+      if (!response.ok) throw new Error("Failed to fetch wishlist");
       return response.json();
     },
     enabled: !!user?.id,
@@ -43,13 +45,13 @@ export default function Wishlist() {
   const removeFromWishlistMutation = useMutation({
     mutationFn: async (itemId: string) => {
       const response = await fetch(`/api/wishlist/${itemId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
-      if (!response.ok) throw new Error('Failed to remove from wishlist');
+      if (!response.ok) throw new Error("Failed to remove from wishlist");
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/wishlist', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/wishlist", user?.id] });
       toast({
         title: "Item Removed",
         description: "Item has been removed from your wishlist",
@@ -100,28 +102,37 @@ export default function Wishlist() {
   };
 
   // Filter products by category
-  const filteredItems = filter === 'all' 
-    ? wishlistItems 
-    : wishlistItems.filter(item => 
-        item.product.fabric.toLowerCase().includes(filter.toLowerCase()) ||
-        item.product.color.toLowerCase().includes(filter.toLowerCase())
-      );
+  const filteredItems =
+    filter === "all"
+      ? wishlistItems
+      : wishlistItems.filter(
+          (item) =>
+            item.product.fabric.toLowerCase().includes(filter.toLowerCase()) ||
+            item.product.color.toLowerCase().includes(filter.toLowerCase()),
+        );
 
   // Get unique categories for filter
-  const categories = [...new Set(wishlistItems.map(item => item.product.fabric))];
+  const categories = [
+    ...new Set(wishlistItems.map((item) => item.product.fabric)),
+  ];
 
-  if (!isAuthenticated) {
+  if (!user) {
     return (
       <div ref={pageRef} className="min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <Heart className="h-24 w-24 text-gray-300 mx-auto mb-6" />
-            <h1 className="text-3xl font-bold text-charcoal mb-4">Please Sign In</h1>
+            <h1 className="text-3xl font-bold text-charcoal mb-4">
+              Please Sign In
+            </h1>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
               Sign in to view your wishlist and save your favorite sarees.
             </p>
             <Link href="/auth">
-              <Button size="lg" className="bg-golden hover:bg-yellow-600 text-charcoal font-semibold">
+              <Button
+                size="lg"
+                className="bg-golden hover:bg-yellow-600 text-charcoal font-semibold"
+              >
                 Sign In
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -157,26 +168,30 @@ export default function Wishlist() {
           <div className="text-center">
             <Heart className="h-24 w-24 text-gray-300 mx-auto mb-6" />
             <h1 className="text-3xl font-bold text-charcoal mb-4">
-              {filter === 'all' ? 'Your wishlist is empty' : 'No items match your filter'}
+              {filter === "all"
+                ? "Your wishlist is empty"
+                : "No items match your filter"}
             </h1>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              {filter === 'all' 
-                ? 'Save your favorite sarees to your wishlist for easy access later.'
-                : 'Try adjusting your filter or browse all wishlist items.'
-              }
+              {filter === "all"
+                ? "Save your favorite sarees to your wishlist for easy access later."
+                : "Try adjusting your filter or browse all wishlist items."}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {filter !== 'all' && (
-                <Button 
-                  variant="outline" 
-                  onClick={() => setFilter('all')}
+              {filter !== "all" && (
+                <Button
+                  variant="outline"
+                  onClick={() => setFilter("all")}
                   className="text-charcoal border-charcoal hover:bg-charcoal hover:text-white"
                 >
                   Show All Items
                 </Button>
               )}
               <Link href="/products">
-                <Button size="lg" className="bg-golden hover:bg-yellow-600 text-charcoal font-semibold">
+                <Button
+                  size="lg"
+                  className="bg-golden hover:bg-yellow-600 text-charcoal font-semibold"
+                >
                   Continue Shopping
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -195,10 +210,14 @@ export default function Wishlist() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-charcoal mb-2">My Wishlist</h1>
-              <p className="text-gray-600">{filteredItems.length} items saved</p>
+              <h1 className="text-3xl font-bold text-charcoal mb-2">
+                My Wishlist
+              </h1>
+              <p className="text-gray-600">
+                {filteredItems.length} items saved
+              </p>
             </div>
-            
+
             {/* Filter */}
             {categories.length > 0 && (
               <div className="flex items-center space-x-2">
@@ -226,7 +245,7 @@ export default function Wishlist() {
         <div className="flex flex-wrap gap-4 mb-8">
           <Button
             onClick={() => {
-              filteredItems.forEach(item => handleMoveToCart(item));
+              filteredItems.forEach((item) => handleMoveToCart(item));
             }}
             disabled={isAddingToCart}
             className="bg-golden hover:bg-yellow-600 text-charcoal font-semibold"
@@ -235,7 +254,10 @@ export default function Wishlist() {
             Move All to Cart
           </Button>
           <Link href="/products">
-            <Button variant="outline" className="text-charcoal border-charcoal hover:bg-charcoal hover:text-white">
+            <Button
+              variant="outline"
+              className="text-charcoal border-charcoal hover:bg-charcoal hover:text-white"
+            >
               Continue Shopping
             </Button>
           </Link>
@@ -244,7 +266,10 @@ export default function Wishlist() {
         {/* Wishlist Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredItems.map((item) => (
-            <Card key={item.id} className="group bg-white shadow-sm hover:shadow-lg transition-shadow duration-300">
+            <Card
+              key={item.id}
+              className="group bg-white shadow-sm hover:shadow-lg transition-shadow duration-300"
+            >
               <CardContent className="p-0">
                 <div className="relative">
                   {/* Product Image */}
@@ -255,7 +280,7 @@ export default function Wishlist() {
                       className="w-full h-64 object-cover cursor-pointer transition-transform duration-300 group-hover:scale-105"
                     />
                   </Link>
-                  
+
                   {/* Remove Button */}
                   <Button
                     variant="ghost"
@@ -269,7 +294,10 @@ export default function Wishlist() {
                   {/* Stock Status */}
                   {item.product.inStock <= 0 && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <Badge variant="secondary" className="bg-red-500 text-white">
+                      <Badge
+                        variant="secondary"
+                        className="bg-red-500 text-white"
+                      >
                         Out of Stock
                       </Badge>
                     </div>
@@ -278,7 +306,13 @@ export default function Wishlist() {
                   {/* Discount Badge */}
                   {item.product.originalPrice && (
                     <Badge className="absolute top-2 left-2 bg-deep-red text-white">
-                      {Math.round((1 - parseFloat(item.product.price) / parseFloat(item.product.originalPrice)) * 100)}% OFF
+                      {Math.round(
+                        (1 -
+                          parseFloat(item.product.price) /
+                            parseFloat(item.product.originalPrice)) *
+                          100,
+                      )}
+                      % OFF
                     </Badge>
                   )}
                 </div>
@@ -290,7 +324,7 @@ export default function Wishlist() {
                       {item.product.name}
                     </h3>
                   </Link>
-                  
+
                   <div className="text-sm text-gray-600 mb-3 space-y-1">
                     <p>Fabric: {item.product.fabric}</p>
                     <p>Color: {item.product.color}</p>
@@ -303,7 +337,10 @@ export default function Wishlist() {
                     </span>
                     {item.product.originalPrice && (
                       <span className="text-sm text-gray-500 line-through ml-2">
-                        ₹{parseFloat(item.product.originalPrice).toLocaleString()}
+                        ₹
+                        {parseFloat(
+                          item.product.originalPrice,
+                        ).toLocaleString()}
                       </span>
                     )}
                   </div>
@@ -318,7 +355,7 @@ export default function Wishlist() {
                       <ShoppingCart className="h-4 w-4 mr-2" />
                       Move to Cart
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       onClick={() => handleAddToCart(item.product)}

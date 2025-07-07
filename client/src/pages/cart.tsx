@@ -21,7 +21,7 @@ export default function Cart() {
   const pageRef = useRef<HTMLDivElement>(null);
   const { cartItems, cartTotal, updateQuantity, removeFromCart, isLoading } =
     useCart();
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (pageRef.current) {
@@ -74,7 +74,7 @@ export default function Cart() {
       </div>
     );
   }
-
+  console.log(user);
   return (
     <div ref={pageRef} className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -264,7 +264,7 @@ export default function Cart() {
                 </div>
 
                 {/* Checkout Button */}
-                {isAuthenticated ? (
+                {!user ? (
                   <Link href="/checkout">
                     <Button className="w-full bg-golden hover:bg-yellow-600 text-charcoal font-semibold py-3 mb-4">
                       Proceed to Checkout

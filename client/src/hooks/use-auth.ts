@@ -1,65 +1,61 @@
-import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
-import type { User, InsertUser } from '@shared/schema';
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import type { User, InsertUser } from "@shared/schema";
 
 interface AuthState {
   user: User | null;
   isLoading: boolean;
-  isAuthenticated: boolean;
 }
 
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
-    isLoading: true,
-    isAuthenticated: false
+    isLoading: false,
   });
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Check session-based authentication
-    const checkAuth = async () => {
-      try {
-        const response = await apiRequest('GET', '/api/auth/me');
-        const user = await response.json();
-        setAuthState({
-          user,
-          isLoading: false,
-          isAuthenticated: true
-        });
-      } catch (error) {
-        setAuthState({
-          user: null,
-          isLoading: false,
-          isAuthenticated: false
-        });
-      }
-    };
-    
-    checkAuth();
-  }, []);
-
-  const login = async (email: string, password: string) => {
+  // Check authentication only when needed
+  const checkAuth = async () => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true }));
-      const response = await apiRequest('POST', '/api/auth/login', { email, password });
+      const response = await apiRequest("GET", "/api/auth/me");
       const user = await response.json();
-      
       setAuthState({
         user,
         isLoading: false,
-        isAuthenticated: true
       });
-      
+      return user;
+    } catch (error) {
+      setAuthState({
+        user: null,
+        isLoading: false,
+      });
+      return null;
+    }
+  };
+
+  const login = async (email: string, password: string) => {
+    try {
+      setAuthState((prev) => ({ ...prev, isLoading: true }));
+      const response = await apiRequest("POST", "/api/auth/login", {
+        email,
+        password,
+      });
+      const user = await response.json();
+
+      setAuthState({
+        user,
+        isLoading: false,
+      });
+
       toast({
         title: "Welcome back!",
         description: "You have been successfully logged in.",
       });
-      
+
       return { success: true, user };
     } catch (error) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
       toast({
         title: "Login failed",
         description: "Invalid email or password. Please try again.",
@@ -71,24 +67,23 @@ export function useAuth() {
 
   const register = async (userData: InsertUser) => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true }));
-      const response = await apiRequest('POST', '/api/auth/register', userData);
+      setAuthState((prev) => ({ ...prev, isLoading: true }));
+      const response = await apiRequest("POST", "/api/auth/register", userData);
       const user = await response.json();
-      
+
       setAuthState({
         user,
         isLoading: false,
-        isAuthenticated: true
       });
-      
+
       toast({
         title: "Account created!",
         description: "Welcome to SareeMart. Start exploring our collection.",
       });
-      
+
       return { success: true, user };
     } catch (error) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
       toast({
         title: "Registration failed",
         description: "Unable to create account. Please try again.",
@@ -100,13 +95,12 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await apiRequest('POST', '/api/auth/logout');
+      await apiRequest("POST", "/api/auth/logout");
       setAuthState({
         user: null,
         isLoading: false,
-        isAuthenticated: false
       });
-      
+
       toast({
         title: "Logged out",
         description: "You have been successfully logged out.",
@@ -116,9 +110,8 @@ export function useAuth() {
       setAuthState({
         user: null,
         isLoading: false,
-        isAuthenticated: false
       });
-      
+
       toast({
         title: "Logged out",
         description: "You have been logged out.",
@@ -136,38 +129,12 @@ export function useAuth() {
   };
 
   const verifyOTP = async (phone: string, otp: string) => {
-    // Simulate OTP verification
-    if (otp === "123456") {
-      const user = {
-        id: Date.now(),
-        username: phone,
-        email: `${phone}@temp.com`,
-        phone,
-        isVerified: true,
-        createdAt: new Date()
-      };
-      
-      localStorage.setItem('user', JSON.stringify(user));
-      setAuthState({
-        user,
-        isLoading: false,
-        isAuthenticated: true
-      });
-      
-      toast({
-        title: "Phone verified!",
-        description: "You have been successfully logged in.",
-      });
-      
-      return { success: true, user };
-    }
-    
     toast({
       title: "Invalid OTP",
       description: "Please check the verification code and try again.",
       variant: "destructive",
     });
-    
+
     return { success: false, error: "Invalid OTP" };
   };
 
@@ -177,6 +144,8 @@ export function useAuth() {
     register,
     logout,
     sendOTP,
-    verifyOTP
+    verifyOTP,
+    checkAuth,
+    isAuthenticated: !!authState.user,
   };
 }

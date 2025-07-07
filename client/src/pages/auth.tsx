@@ -1,50 +1,50 @@
-import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'wouter';
-import { Phone, Mail, Lock, User, ArrowRight, ShoppingBag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/hooks/use-auth';
-import { useToast } from '@/hooks/use-toast';
-import { animatePageEntry } from '@/lib/animations';
+import { useEffect, useRef, useState } from "react";
+import { useLocation } from "wouter";
+import { Phone, Mail, Lock, User, ArrowRight, ShoppingBag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { animatePageEntry } from "@/lib/animations";
 
 export default function Auth() {
   const [, setLocation] = useLocation();
   const pageRef = useRef<HTMLDivElement>(null);
-  const { isAuthenticated, login, register, sendOTP, verifyOTP } = useAuth();
+  const { user, login, register, sendOTP, verifyOTP } = useAuth();
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState('');
-  
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
+
   // Email/Password form data
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
 
   useEffect(() => {
-    if (isAuthenticated) {
-      setLocation('/');
+    if (user) {
+      setLocation("/");
       return;
     }
 
     if (pageRef.current) {
       animatePageEntry(pageRef.current);
     }
-  }, [isAuthenticated, setLocation]);
+  }, [user, setLocation]);
 
   const handleOTPLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     if (!otpSent) {
       // Send OTP
       const result = await sendOTP(phoneNumber);
@@ -55,22 +55,22 @@ export default function Auth() {
       // Verify OTP
       const result = await verifyOTP(phoneNumber, otp);
       if (result.success) {
-        setLocation('/');
+        setLocation("/");
       }
     }
-    
+
     setIsLoading(false);
   };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     const result = await login(loginData.email, loginData.password);
     if (result.success) {
-      setLocation('/');
+      setLocation("/");
     }
-    
+
     setIsLoading(false);
   };
 
@@ -96,31 +96,36 @@ export default function Auth() {
     }
 
     setIsLoading(true);
-    
+
     const result = await register({
       username: registerData.username,
       email: registerData.email,
       password: registerData.password,
     });
-    
+
     if (result.success) {
-      setLocation('/');
+      setLocation("/");
     }
-    
+
     setIsLoading(false);
   };
 
-  if (isAuthenticated) {
+  if (user) {
     return null;
   }
 
   return (
-    <div ref={pageRef} className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div
+      ref={pageRef}
+      className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+    >
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
           <ShoppingBag className="mx-auto h-12 w-12 text-golden" />
-          <h2 className="mt-6 text-3xl font-bold text-charcoal">Welcome to SareeMart</h2>
+          <h2 className="mt-6 text-3xl font-bold text-charcoal">
+            Welcome to SareeMart
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
             Sign in to your account or create a new one to start shopping
           </p>
@@ -128,7 +133,9 @@ export default function Auth() {
 
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="text-center text-charcoal">Get Started</CardTitle>
+            <CardTitle className="text-center text-charcoal">
+              Get Started
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="phone" className="w-full">
@@ -171,7 +178,8 @@ export default function Auth() {
                         required
                       />
                       <p className="text-xs text-blue-600 mt-1">
-                        For demo purposes, use: <span className="font-mono font-bold">123456</span>
+                        For demo purposes, use:{" "}
+                        <span className="font-mono font-bold">123456</span>
                       </p>
                     </div>
                   )}
@@ -202,7 +210,7 @@ export default function Auth() {
                       variant="ghost"
                       onClick={() => {
                         setOtpSent(false);
-                        setOtp('');
+                        setOtp("");
                       }}
                       className="w-full text-sm text-gray-600"
                     >
@@ -232,7 +240,12 @@ export default function Auth() {
                             type="email"
                             placeholder="Enter your email"
                             value={loginData.email}
-                            onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                            onChange={(e) =>
+                              setLoginData({
+                                ...loginData,
+                                email: e.target.value,
+                              })
+                            }
                             className="pl-10"
                             required
                           />
@@ -248,7 +261,12 @@ export default function Auth() {
                             type="password"
                             placeholder="Enter your password"
                             value={loginData.password}
-                            onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                            onChange={(e) =>
+                              setLoginData({
+                                ...loginData,
+                                password: e.target.value,
+                              })
+                            }
                             className="pl-10"
                             required
                           />
@@ -257,7 +275,9 @@ export default function Auth() {
 
                       <Button
                         type="submit"
-                        disabled={isLoading || !loginData.email || !loginData.password}
+                        disabled={
+                          isLoading || !loginData.email || !loginData.password
+                        }
                         className="w-full bg-charcoal hover:bg-gray-800 text-white font-semibold"
                       >
                         {isLoading ? (
@@ -284,7 +304,12 @@ export default function Auth() {
                             type="text"
                             placeholder="Enter your full name"
                             value={registerData.username}
-                            onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
+                            onChange={(e) =>
+                              setRegisterData({
+                                ...registerData,
+                                username: e.target.value,
+                              })
+                            }
                             className="pl-10"
                             required
                           />
@@ -300,7 +325,12 @@ export default function Auth() {
                             type="email"
                             placeholder="Enter your email"
                             value={registerData.email}
-                            onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                            onChange={(e) =>
+                              setRegisterData({
+                                ...registerData,
+                                email: e.target.value,
+                              })
+                            }
                             className="pl-10"
                             required
                           />
@@ -316,7 +346,12 @@ export default function Auth() {
                             type="password"
                             placeholder="Create a password (min 6 characters)"
                             value={registerData.password}
-                            onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                            onChange={(e) =>
+                              setRegisterData({
+                                ...registerData,
+                                password: e.target.value,
+                              })
+                            }
                             className="pl-10"
                             minLength={6}
                             required
@@ -325,7 +360,9 @@ export default function Auth() {
                       </div>
 
                       <div>
-                        <Label htmlFor="confirm-password">Confirm Password</Label>
+                        <Label htmlFor="confirm-password">
+                          Confirm Password
+                        </Label>
                         <div className="relative mt-1">
                           <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                           <Input
@@ -333,7 +370,12 @@ export default function Auth() {
                             type="password"
                             placeholder="Confirm your password"
                             value={registerData.confirmPassword}
-                            onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+                            onChange={(e) =>
+                              setRegisterData({
+                                ...registerData,
+                                confirmPassword: e.target.value,
+                              })
+                            }
                             className="pl-10"
                             required
                           />
@@ -342,8 +384,13 @@ export default function Auth() {
 
                       <Button
                         type="submit"
-                        disabled={isLoading || !registerData.username || !registerData.email || 
-                                 !registerData.password || !registerData.confirmPassword}
+                        disabled={
+                          isLoading ||
+                          !registerData.username ||
+                          !registerData.email ||
+                          !registerData.password ||
+                          !registerData.confirmPassword
+                        }
                         className="w-full bg-charcoal hover:bg-gray-800 text-white font-semibold"
                       >
                         {isLoading ? (
