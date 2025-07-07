@@ -23,14 +23,15 @@ export function useAuth() {
         throw new Error("Authentication failed");
       }
       const user = await response.json();
-      console.log("Auth check successful, user:", user);
-      setAuthState({
+
+      setAuthState(prev => ({
+        ...prev,
         user,
         isLoading: false,
-      });
+      }));
       return user;
     } catch (error) {
-      console.log("Auth check failed:", error);
+
       setAuthState({
         user: null,
         isLoading: false,
@@ -48,10 +49,11 @@ export function useAuth() {
       });
       const user = await response.json();
 
-      setAuthState({
+      setAuthState(prev => ({
+        ...prev,
         user,
         isLoading: false,
-      });
+      }));
 
       toast({
         title: "Welcome back!",
@@ -76,10 +78,11 @@ export function useAuth() {
       const response = await apiRequest("POST", "/api/auth/register", userData);
       const user = await response.json();
 
-      setAuthState({
+      setAuthState(prev => ({
+        ...prev,
         user,
         isLoading: false,
-      });
+      }));
 
       toast({
         title: "Account created!",
@@ -144,13 +147,14 @@ export function useAuth() {
   };
 
   return {
-    ...authState,
+    user: authState.user,
+    isLoading: authState.isLoading,
+    isAuthenticated: !!authState.user,
     login,
     register,
     logout,
     sendOTP,
     verifyOTP,
     checkAuth,
-    isAuthenticated: !!authState.user,
   };
 }

@@ -21,7 +21,7 @@ export default function Cart() {
   const pageRef = useRef<HTMLDivElement>(null);
   const { cartItems, cartTotal, updateQuantity, removeFromCart, isLoading } =
     useCart();
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (pageRef.current) {
