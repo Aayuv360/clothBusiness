@@ -19,13 +19,18 @@ export function useAuth() {
   const checkAuth = async () => {
     try {
       const response = await apiRequest("GET", "/api/auth/me");
+      if (!response.ok) {
+        throw new Error("Authentication failed");
+      }
       const user = await response.json();
+      console.log("Auth check successful, user:", user);
       setAuthState({
         user,
         isLoading: false,
       });
       return user;
     } catch (error) {
+      console.log("Auth check failed:", error);
       setAuthState({
         user: null,
         isLoading: false,
