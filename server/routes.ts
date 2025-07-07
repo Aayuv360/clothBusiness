@@ -518,18 +518,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         shippingAddress,
       } = req.body;
 
+      console.log("Payment verification request:", {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature: razorpay_signature ? "***provided***" : "missing",
+        userId,
+        cartItemsCount: cartItems?.length || 0,
+      });
+
+      // Validate required fields
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        return res.status(400).json({
+          success: false,
+          message: "Missing required payment parameters",
+        });
+      }
+
       const body = razorpay_order_id + "|" + razorpay_payment_id;
       const expectedSignature = crypto
-        .createHmac(
-          "sha256",
-          process.env.RAZORPAY_KEY_SECRET || "dummy_secret_for_test",
-        )
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
         .update(body.toString())
         .digest("hex");
+
+      console.log("Signature verification:", {
+        expectedSignature,
+        receivedSignature: razorpay_signature,
+        match: expectedSignature === razorpay_signature,
+      });
 
       const isAuthentic = expectedSignature === razorpay_signature;
 
       if (isAuthentic) {
+        // Validate cart items and userId
+        if (!userId || !cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid order data: missing userId or cart items",
+          });
+        }
+
         // Payment is verified, create order in database
         const orderNumber = `ORD-${Date.now()}`;
         const total = cartItems.reduce(
@@ -554,15 +581,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
 
         const orderItems = cartItems.map((item: any) => ({
-          productId: item.product._id,
+          productId: item.product._id || item.productId,
           quantity: item.quantity,
           price: item.product.price,
         }));
+
+        console.log("Creating order:", { orderData, orderItemsCount: orderItems.length });
 
         const order = await getStorage().createOrder(orderData, orderItems);
 
         // Clear user's cart
         await getStorage().clearCart(userId);
+
+        console.log("Order created successfully:", order._id);
 
         res.json({
           success: true,
@@ -570,6 +601,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Payment verified and order created successfully",
         });
       } else {
+        console.log("Payment verification failed - signature mismatch");
         res.status(400).json({
           success: false,
           message: "Payment verification failed",

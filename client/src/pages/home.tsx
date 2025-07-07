@@ -189,33 +189,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section className="py-16 bg-charcoal text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
-          <p className="text-gray-300 mb-8">
-            Subscribe to our newsletter for exclusive offers, new arrivals, and
-            styling tips
-          </p>
-          <form
-            className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-lg text-charcoal border-0 focus:ring-2 focus:ring-golden"
-            />
-            <Button
-              type="submit"
-              className="bg-golden hover:bg-yellow-600 text-charcoal px-6 py-3 font-semibold"
-            >
-              Subscribe
-            </Button>
-          </form>
-        </div>
-      </section>
-
       {/* Customer Support Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -199,8 +199,8 @@ export default function Checkout() {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                razorpay_orderid: response.razorpay_orderid,
-                razorpay_paymentid: response.razorpay_paymentid,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
                 userId: user!.id,
                 cartItems: cartItems,
