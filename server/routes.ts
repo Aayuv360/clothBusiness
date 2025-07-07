@@ -129,6 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products/featured", async (req, res) => {
     try {
       const products = await getStorage().getFeaturedProducts();
+      console.log(products);
       res.json(products);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch featured products" });
@@ -550,7 +551,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (isAuthentic) {
         // Validate cart items and userId
-        if (!userId || !cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+        if (
+          !userId ||
+          !cartItems ||
+          !Array.isArray(cartItems) ||
+          cartItems.length === 0
+        ) {
           return res.status(400).json({
             success: false,
             message: "Invalid order data: missing userId or cart items",
@@ -586,7 +592,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           price: item.product.price,
         }));
 
-        console.log("Creating order:", { orderData, orderItemsCount: orderItems.length });
+        console.log("Creating order:", {
+          orderData,
+          orderItemsCount: orderItems.length,
+        });
 
         const order = await getStorage().createOrder(orderData, orderItems);
 

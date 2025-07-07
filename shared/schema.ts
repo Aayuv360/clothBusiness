@@ -124,6 +124,7 @@ export const insertCategorySchema = z.object({
 });
 
 export const insertProductSchema = z.object({
+  id: z.number(),
   name: z.string().min(1),
   sku: z.string().min(1),
   description: z.string().min(1),

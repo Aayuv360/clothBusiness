@@ -111,15 +111,12 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### January 07, 2025 - Complete React Router DOM Migration and Enhanced Features
-- Successfully migrated entire application from Wouter to React Router DOM
-- Fixed all navigation components, Link components (href to "to" props), and useLocation patterns
-- Added wishlist API route `/api/wishlist/:userId` for proper JSON responses
-- Enhanced product detail page with review submission functionality
-- Added categories API endpoint and related products display
-- Implemented review dialog with star rating and comment submission
-- Added category badges to product detail pages with clickable navigation
-- Fixed all API routing issues ensuring proper JSON content-type responses
+### January 07, 2025 - Schema Optimization & Payment Fix
+- **Database Schema Cleanup**: Removed redundant `id` field from MongoDB models - now uses native `_id` ObjectId converted to string `id` by convertDoc function
+- **Payment Verification Fix**: Fixed Razorpay payment parameter mismatch (`razorpay_orderid` vs `razorpay_order_id`) causing 400 errors
+- **Enhanced Payment Flow**: Added comprehensive debugging logs and validation for payment verification
+- **Product Detail Enhancements**: Review functionality with star ratings, category badges with navigation, related products section
+- **Complete React Router DOM Migration**: Fixed all navigation, Link components, and API routing issues
 
 ### July 06, 2025 - Session-Based Authentication Implementation
 - Implemented session-based authentication using express-session and connect-mongo
