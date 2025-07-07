@@ -55,7 +55,8 @@ export default function Checkout() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Wait for auth to finish loading before redirecting
+    if (user === null && isAuthenticated === false) {
       setLocation('/auth');
       return;
     }
@@ -68,7 +69,7 @@ export default function Checkout() {
     if (pageRef.current) {
       animatePageEntry(pageRef.current);
     }
-  }, [isAuthenticated, cartItems.length, setLocation]);
+  }, [user, isAuthenticated, cartItems.length, setLocation]);
 
   const shippingCost = cartTotal >= 999 ? 0 : 99;
   const taxAmount = Math.round(cartTotal * 0.05);
@@ -166,6 +167,16 @@ export default function Checkout() {
   };
 
   const handleRazorpayPayment = async () => {
+    // Check if address is selected before opening Razorpay
+    if (!selectedAddressId || !selectedAddress) {
+      toast({
+        title: "Address Required",
+        description: "Please select a shipping address before proceeding with payment.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsProcessing(true);
     
     try {
@@ -281,6 +292,16 @@ export default function Checkout() {
   };
 
   const handleDirectOrder = async () => {
+    // Check if address is selected before placing order
+    if (!selectedAddressId || !selectedAddress) {
+      toast({
+        title: "Address Required",
+        description: "Please select a shipping address before placing your order.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsProcessing(true);
     
     try {
