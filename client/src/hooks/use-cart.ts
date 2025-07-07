@@ -28,7 +28,7 @@ export function useCart() {
       productId,
       quantity = 1,
     }: {
-      productId: string;
+      productId: number;
       quantity?: number;
     }) => {
       const response = await apiRequest("POST", "/api/cart", {
@@ -114,7 +114,7 @@ export function useCart() {
     },
   });
 
-  const addToCart = (productId: string, quantity?: number) => {
+  const addToCart = (productId: number, quantity?: number) => {
     if (!user) {
       toast({
         title: "Please login",

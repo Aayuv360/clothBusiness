@@ -7,12 +7,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
-import Products from "@/pages/products";
 import ProductDetail from "@/pages/product-detail";
 import Cart from "@/pages/cart";
 import Wishlist from "@/pages/wishlist";
 import Checkout from "@/pages/checkout";
-import Orders from "@/pages/orders";
 import Profile from "@/pages/profile";
 import Auth from "@/pages/auth";
 import Header from "@/components/layout/header";
@@ -32,8 +30,6 @@ function Router() {
       <main className="flex-1">
         <Switch>
           <Route path="/" component={Home} />
-          <Route path="/products" component={Products} />
-          <Route path="/products/:category" component={Products} />
           <Route path="/product/:id" component={ProductDetail} />
           <Route path="/cart" component={Cart} />
           <Route path="/wishlist" component={Wishlist} />

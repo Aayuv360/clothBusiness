@@ -35,7 +35,7 @@ export default function ProductCard({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product.id || product._id || "");
+    addToCart(product.id);
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
