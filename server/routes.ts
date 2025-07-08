@@ -201,6 +201,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
       const { productId, quantity } = req.body;
+      
+      console.log("Adding to cart:", {
+        userId: req.session.userId,
+        productId,
+        quantity,
+        body: req.body
+      });
+      
       const cartData = insertCartSchema.parse({
         userId: req.session.userId,
         productId,
@@ -209,6 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const cartItem = await getStorage().addToCart(cartData);
       res.json(cartItem);
     } catch (error) {
+      console.error("Cart add error:", error);
       res.status(400).json({ message: "Failed to add to cart" });
     }
   });

@@ -3,7 +3,7 @@ import { z } from "zod";
 // MongoDB type definitions based on Mongoose models
 export interface User {
   _id: string;
-  id: string; // MongoDB _id converted to id by convertDoc
+  id: string;
   username: string;
   email: string;
   password: string;
