@@ -365,6 +365,13 @@ export class MongoStorage implements IStorage {
     if (filters?.categoryId || filters?.category) {
       query.category = filters.category || filters.categoryId;
     }
+    if (filters?.categorySlug) {
+      // Find category by slug and filter by category name
+      const category = await Category.findOne({ slug: filters.categorySlug });
+      if (category) {
+        query.category = category.name;
+      }
+    }
     if (filters?.search) {
       query.$or = [
         { name: { $regex: filters.search, $options: "i" } },
@@ -378,14 +385,45 @@ export class MongoStorage implements IStorage {
     if (filters?.color) {
       query.color = { $regex: filters.color, $options: "i" };
     }
-    if (filters?.minPrice) {
-      query.price = { $gte: filters.minPrice };
+    if (filters?.minPrice || filters?.maxPrice) {
+      query.price = {};
+      if (filters?.minPrice) {
+        query.price.$gte = filters.minPrice.toString();
+      }
+      if (filters?.maxPrice) {
+        query.price.$lte = filters.maxPrice.toString();
+      }
     }
-    if (filters?.maxPrice) {
-      query.price = { ...query.price, $lte: filters.maxPrice };
+    if (filters?.inStockOnly) {
+      query.stockQuantity = { $gt: 0 };
     }
 
-    const products = await Product.find(query);
+    // Build sort object
+    let sortObj: any = {};
+    if (filters?.sortBy) {
+      switch (filters.sortBy) {
+        case 'price-low':
+          sortObj = { price: 1 };
+          break;
+        case 'price-high':
+          sortObj = { price: -1 };
+          break;
+        case 'name':
+          sortObj = { name: 1 };
+          break;
+        case 'rating':
+          sortObj = { rating: -1 };
+          break;
+        case 'newest':
+        default:
+          sortObj = { createdAt: -1 };
+          break;
+      }
+    } else {
+      sortObj = { createdAt: -1 };
+    }
+
+    const products = await Product.find(query).sort(sortObj);
     return products.map((product) => convertDoc<ProductType>(product));
   }
 

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import ProductCard from "@/components/product/product-card";
+import RecentlyViewed from "@/components/product/recently-viewed";
 import ProductModal from "@/components/product/product-modal";
 import { animateHero, animateProductCards } from "@/lib/animations";
 import { useState } from "react";
@@ -261,6 +262,13 @@ export default function Home() {
               </CardContent>
             </Card>
           </div>
+        </div>
+      </section>
+
+      {/* Recently Viewed */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <RecentlyViewed />
         </div>
       </section>
 

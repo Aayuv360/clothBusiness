@@ -94,7 +94,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/categories/:slug", async (req, res) => {
+  app.get("/api/categories/slug/:slug", async (req, res) => {
     try {
       const category = await getStorage().getCategoryBySlug(req.params.slug);
       if (!category) {
@@ -106,21 +106,163 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Returns API routes
+  app.get("/api/orders/:userId/eligible-returns", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const orders = await getStorage().getOrders(userId);
+      const eligibleOrders = orders.filter(order => 
+        order.status === 'delivered' && 
+        new Date(order.createdAt) >= thirtyDaysAgo
+      );
+      
+      res.json(eligibleOrders);
+    } catch (error) {
+      console.error("Failed to fetch eligible returns:", error);
+      res.status(500).json({ message: "Failed to fetch eligible orders" });
+    }
+  });
+
+  app.get("/api/returns/:userId", async (req, res) => {
+    try {
+      // For now, return empty array as we don't have returns storage yet
+      res.json([]);
+    } catch (error) {
+      console.error("Failed to fetch returns:", error);
+      res.status(500).json({ message: "Failed to fetch returns" });
+    }
+  });
+
+  app.post("/api/returns", async (req, res) => {
+    try {
+      const { orderId, type, reason, description } = req.body;
+      const userId = req.session.userId!;
+      
+      // Mock return request creation
+      const returnRequest = {
+        id: Date.now().toString(),
+        orderId,
+        orderNumber: `ORD-${Date.now()}`,
+        type,
+        reason,
+        description,
+        status: 'pending',
+        requestDate: new Date(),
+        items: []
+      };
+      
+      res.json(returnRequest);
+    } catch (error) {
+      console.error("Failed to create return request:", error);
+      res.status(500).json({ message: "Failed to create return request" });
+    }
+  });
+
+  // Guest checkout route
+  app.post("/api/guest-orders", async (req, res) => {
+    try {
+      const { guestInfo, shippingAddress, items, total, paymentMethod } = req.body;
+      
+      // Create guest order
+      const orderData = {
+        userId: 'guest',
+        orderNumber: `ORD-${Date.now()}`,
+        total,
+        paymentMethod,
+        paymentStatus: paymentMethod === 'cod' ? 'pending' : 'completed',
+        status: 'confirmed',
+        shippingAddress: {
+          name: guestInfo.name,
+          email: guestInfo.email,
+          phone: guestInfo.phone,
+          ...shippingAddress
+        },
+        guestInfo,
+        estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        createdAt: new Date()
+      };
+      
+      const order = await getStorage().createOrder(orderData, items);
+      
+      res.json({
+        ...order,
+        message: "Order placed successfully"
+      });
+    } catch (error) {
+      console.error("Failed to create guest order:", error);
+      res.status(500).json({ message: "Failed to create order" });
+    }
+  });
+
+  // Product comparison route
+  app.get("/api/products/compare", async (req, res) => {
+    try {
+      const ids = req.query.ids as string;
+      if (!ids) {
+        return res.json([]);
+      }
+      
+      const productIds = ids.split(',').filter(Boolean);
+      const products = await Promise.all(
+        productIds.map(id => getStorage().getProduct(id))
+      );
+      
+      // Filter out null products
+      const validProducts = products.filter(product => product !== undefined);
+      res.json(validProducts);
+    } catch (error) {
+      console.error("Failed to fetch products for comparison:", error);
+      res.status(500).json({ message: "Failed to fetch products for comparison" });
+    }
+  });
+
   // Products routes
   app.get("/api/products", async (req, res) => {
     try {
-      const filters = {
-        categoryId: req.query.categoryId as string,
-        minPrice: req.query.minPrice
-          ? parseFloat(req.query.minPrice as string)
-          : undefined,
-        maxPrice: req.query.maxPrice
-          ? parseFloat(req.query.maxPrice as string)
-          : undefined,
-        fabric: req.query.fabric as string,
-        color: req.query.color as string,
-        search: req.query.search as string,
-      };
+      const {
+        search,
+        category,
+        categoryId,
+        minPrice,
+        maxPrice,
+        fabric,
+        color,
+        sort,
+        inStock
+      } = req.query;
+
+      const filters: any = {};
+      
+      if (search) {
+        filters.search = search as string;
+      }
+      if (category) {
+        filters.categorySlug = category as string;
+      }
+      if (categoryId) {
+        filters.categoryId = categoryId as string;
+      }
+      if (minPrice) {
+        filters.minPrice = parseFloat(minPrice as string);
+      }
+      if (maxPrice) {
+        filters.maxPrice = parseFloat(maxPrice as string);
+      }
+      if (fabric) {
+        filters.fabric = fabric as string;
+      }
+      if (color) {
+        filters.color = color as string;
+      }
+      if (inStock === 'true') {
+        filters.inStockOnly = true;
+      }
+      if (sort) {
+        filters.sortBy = sort as string;
+      }
       const products = await getStorage().getProducts(filters);
       res.json(products);
     } catch (error) {

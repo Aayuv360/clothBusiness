@@ -31,6 +31,7 @@ import ProductCard from "@/components/product/product-card";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { useRecentlyViewed } from "@/components/product/recently-viewed";
 import { animatePageEntry } from "@/lib/animations";
 import { apiRequest } from "@/lib/queryClient";
 import type { Product, Review, Category } from "@shared/schema";
@@ -52,6 +53,7 @@ export default function ProductDetail() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { addToRecentlyViewed } = useRecentlyViewed();
 
   const { data: product, isLoading } = useQuery<Product>({
     queryKey: ["/api/products", productId],
@@ -136,6 +138,13 @@ export default function ProductDetail() {
       animatePageEntry(pageRef.current);
     }
   }, []);
+
+  // Add to recently viewed when product loads
+  useEffect(() => {
+    if (product && productId) {
+      addToRecentlyViewed(productId);
+    }
+  }, [product, productId, addToRecentlyViewed]);
 
   useEffect(() => {
     if (product) {

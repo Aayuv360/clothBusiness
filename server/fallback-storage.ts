@@ -208,10 +208,17 @@ export class FallbackStorage implements IStorage {
 
   // Product methods
   async getProducts(filters?: any): Promise<ProductType[]> {
-    let filtered = this.products;
+    let filtered = this.products.filter(p => p.isActive);
     
     if (filters?.categoryId) {
-      filtered = filtered.filter(p => p.categoryId === filters.categoryId);
+      filtered = filtered.filter(p => p.category === filters.categoryId);
+    }
+    if (filters?.categorySlug) {
+      // Find category by slug and filter by category name
+      const category = this.categories.find(c => c.slug === filters.categorySlug);
+      if (category) {
+        filtered = filtered.filter(p => p.category === category.name);
+      }
     }
     if (filters?.minPrice) {
       filtered = filtered.filter(p => parseFloat(p.price) >= filters.minPrice);
@@ -228,8 +235,34 @@ export class FallbackStorage implements IStorage {
     if (filters?.search) {
       filtered = filtered.filter(p => 
         p.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        p.description.toLowerCase().includes(filters.search.toLowerCase())
+        p.description.toLowerCase().includes(filters.search.toLowerCase()) ||
+        p.sku.toLowerCase().includes(filters.search.toLowerCase())
       );
+    }
+    if (filters?.inStockOnly) {
+      filtered = filtered.filter(p => p.stockQuantity > 0);
+    }
+    
+    // Sorting
+    if (filters?.sortBy) {
+      switch (filters.sortBy) {
+        case 'price-low':
+          filtered.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+          break;
+        case 'price-high':
+          filtered.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+          break;
+        case 'name':
+          filtered.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+        case 'rating':
+          filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+          break;
+        case 'newest':
+        default:
+          filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          break;
+      }
     }
     
     return filtered;
