@@ -65,15 +65,15 @@ function convertDoc<T>(doc: any): T {
   if (!doc) return doc;
   const converted = doc.toObject ? doc.toObject() : doc;
 
-  // If document has an existing id field, use that and convert to string
+  // Ensure id is a string for consistency
   if (converted.id !== undefined) {
     converted.id = converted.id.toString();
   } else if (converted._id) {
-    // Fallback to _id if no id field exists
+    // Only fallback to _id if no custom id field exists
     converted.id = converted._id.toString();
   }
 
-  // Clean up MongoDB fields
+  // Clean up MongoDB internal fields
   delete converted._id;
   delete converted.__v;
 
@@ -473,34 +473,34 @@ export class MongoStorage implements IStorage {
   async getCartItems(
     userId: string,
   ): Promise<(CartItemType & { product: ProductType })[]> {
-    const cartItems = await CartItem.find({ userId }).populate("productId");
+    const cartItems = await CartItem.find({ userId });
 
-    // Filter out items where populate failed (broken references)
-    const validCartItems = cartItems.filter((item) => item.productId !== null);
+    // Manual join with products using string ID
+    const cartItemsWithProducts = [];
+    for (const cartItem of cartItems) {
+      const product = await Product.findOne({ id: cartItem.productId });
+      if (product) {
+        cartItemsWithProducts.push({
+          ...convertDoc<CartItemType>(cartItem),
+          product: convertDoc<ProductType>(product),
+        });
+      }
+    }
 
-    return validCartItems.map((item) => {
-      const converted = convertDoc<CartItemType>(item);
-      const product = convertDoc<ProductType>(item.productId);
-
-      return {
-        ...converted,
-        productId: item.productId._id.toString(), // Keep the original MongoDB _id for orders
-        product: product,
-      };
-    });
+    return cartItemsWithProducts;
   }
 
   async addToCart(cartData: InsertCartItem): Promise<CartItemType> {
+    // Verify product exists using string ID
     const product = await Product.findOne({ id: cartData.productId });
     if (!product) {
       throw new Error("Product not found");
     }
 
-    const mongoProductId = product.id;
-
+    // Check if item already exists in cart using string IDs directly
     const existingItem = await CartItem.findOne({
       userId: cartData.userId,
-      productId: mongoProductId,
+      productId: cartData.productId, // Use string ID directly
     });
 
     if (existingItem) {
@@ -509,10 +509,8 @@ export class MongoStorage implements IStorage {
       return convertDoc<CartItemType>(existingItem);
     }
 
-    const cartItem = new CartItem({
-      ...cartData,
-      productId: mongoProductId, // Use MongoDB ObjectId
-    });
+    // Create cart item with string IDs directly
+    const cartItem = new CartItem(cartData);
     await cartItem.save();
     return convertDoc<CartItemType>(cartItem);
   }

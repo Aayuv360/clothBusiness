@@ -114,17 +114,17 @@ const addressSchema = new Schema<IAddress>({
 
 export const Address = mongoose.model<IAddress>('Address', addressSchema);
 
-// Cart Schema
+// Cart Schema  
 export interface ICartItem extends Document {
-  userId: mongoose.Types.ObjectId;
-  productId: mongoose.Types.ObjectId;
+  userId: string;
+  productId: string; // Use string ID to match product.id field
   quantity: number;
   createdAt: Date;
 }
 
 const cartSchema = new Schema<ICartItem>({
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  productId: { type: Schema.Types.ObjectId, ref: 'sm_products', required: true },
+  userId: { type: String, required: true },
+  productId: { type: String, required: true }, // String reference to product.id
   quantity: { type: Number, default: 1 },
   createdAt: { type: Date, default: Date.now }
 });
@@ -133,14 +133,14 @@ export const CartItem = mongoose.model<ICartItem>('CartItem', cartSchema);
 
 // Wishlist Schema
 export interface IWishlistItem extends Document {
-  userId: mongoose.Types.ObjectId;
-  productId: mongoose.Types.ObjectId;
+  userId: string;
+  productId: string; // Use string ID to match product.id field
   createdAt: Date;
 }
 
 const wishlistSchema = new Schema<IWishlistItem>({
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  productId: { type: Schema.Types.ObjectId, ref: 'sm_products', required: true },
+  userId: { type: String, required: true },
+  productId: { type: String, required: true }, // String reference to product.id
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -177,16 +177,16 @@ export const Order = mongoose.model<IOrder>('Order', orderSchema);
 
 // Order Item Schema
 export interface IOrderItem extends Document {
-  orderId: mongoose.Types.ObjectId;
-  productId: mongoose.Types.ObjectId;
+  orderId: string;
+  productId: string; // Use string ID to match product.id field
   quantity: number;
   price: string;
   createdAt: Date;
 }
 
 const orderItemSchema = new Schema<IOrderItem>({
-  orderId: { type: Schema.Types.ObjectId, ref: 'Order', required: true },
-  productId: { type: Schema.Types.ObjectId, ref: 'sm_products', required: true },
+  orderId: { type: String, required: true },
+  productId: { type: String, required: true }, // String reference to product.id
   quantity: { type: Number, required: true },
   price: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
