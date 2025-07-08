@@ -428,8 +428,25 @@ export class MongoStorage implements IStorage {
   }
 
   async getProduct(id: string): Promise<ProductType | undefined> {
-    const product = await Product.findById(id);
-    return product ? convertDoc<ProductType>(product) : undefined;
+    try {
+      // Try to find by string ID first (most common case)
+      let product = await Product.findOne({ id: id });
+      
+      // If not found, try numeric ID
+      if (!product && !isNaN(Number(id))) {
+        product = await Product.findOne({ id: parseInt(id) });
+      }
+      
+      // If not found and id looks like an ObjectId, try findById
+      if (!product && id.match(/^[0-9a-fA-F]{24}$/)) {
+        product = await Product.findById(id);
+      }
+      
+      return product ? convertDoc<ProductType>(product) : undefined;
+    } catch (error) {
+      console.error("Error in getProduct:", error);
+      return undefined;
+    }
   }
 
   async getProductsByCategory(categoryId: string): Promise<ProductType[]> {
@@ -691,17 +708,32 @@ export class MongoStorage implements IStorage {
   async getProductReviews(
     productId: string,
   ): Promise<(ReviewType & { user: Pick<UserType, "username"> })[]> {
-    const reviews = await Review.find({ productId }).populate(
-      "userId",
-      "username",
-    );
-    return reviews.map((review) => {
-      const converted = convertDoc<ReviewType>(review);
-      return {
-        ...converted,
-        user: { username: (review.userId as any).username },
-      };
-    });
+    try {
+      // Try to find reviews by string product ID first (most common case)
+      let reviews = await Review.find({ productId: productId }).populate(
+        "userId",
+        "username",
+      );
+      
+      // If not found, try numeric product ID
+      if (reviews.length === 0 && !isNaN(Number(productId))) {
+        reviews = await Review.find({ productId: parseInt(productId) }).populate(
+          "userId",
+          "username",
+        );
+      }
+      
+      return reviews.map((review) => {
+        const converted = convertDoc<ReviewType>(review);
+        return {
+          ...converted,
+          user: { username: (review.userId as any).username || "Anonymous" },
+        };
+      });
+    } catch (error) {
+      console.error("Error in getProductReviews:", error);
+      return [];
+    }
   }
 
   async createReview(reviewData: InsertReview): Promise<ReviewType> {

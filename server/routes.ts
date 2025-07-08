@@ -281,12 +281,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/products/:id", async (req, res) => {
     try {
-      const product = await getStorage().getProduct(req.params.id);
+      const productId = req.params.id;
+      console.log("Fetching product with ID:", productId);
+      
+      const product = await getStorage().getProduct(productId);
+      console.log("Product found:", !!product);
+      
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
       res.json(product);
     } catch (error) {
+      console.error("Error fetching product:", error);
       res.status(500).json({ message: "Failed to fetch product" });
     }
   });
@@ -608,9 +614,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/reviews/:id", async (req, res) => {
     try {
       const productId = req.params.id;
+      console.log("Fetching reviews for product ID:", productId);
+      
       const reviews = await getStorage().getProductReviews(productId);
+      console.log("Reviews found:", reviews.length);
+      
       res.json(reviews);
     } catch (error) {
+      console.error("Error fetching reviews:", error);
       res.status(500).json({ message: "Failed to fetch reviews" });
     }
   });
