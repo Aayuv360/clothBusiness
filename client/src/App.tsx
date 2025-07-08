@@ -19,9 +19,9 @@ import Products from "./pages/products";
 import CategoryPage from "./pages/category";
 import Orders from "./pages/orders";
 import OrderDetail from "./pages/order-detail";
-import Returns from "@/pages/returns";
+import Returns from "./pages/returns";
 import ComparePage from "./pages/compare";
-import ChatWidget from "@/components/support/chat-widget";
+import ChatWidget from "./components/support/chat-widget";
 
 function AppRouter() {
   const { checkAuth } = useAuth();

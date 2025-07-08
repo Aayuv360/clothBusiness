@@ -523,12 +523,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/orders/detail/:id", async (req, res) => {
     try {
       const id = req.params.id;
+      
+      if (!id || id === 'undefined' || id === 'null') {
+        return res.status(400).json({ message: "Invalid order ID" });
+      }
+      
       const order = await getStorage().getOrder(id);
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
       res.json(order);
     } catch (error) {
+      console.error("Failed to fetch order:", error);
       res.status(500).json({ message: "Failed to fetch order" });
     }
   });

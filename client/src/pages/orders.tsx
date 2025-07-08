@@ -161,7 +161,7 @@ export default function Orders() {
                           <span className="capitalize">{order.status}</span>
                         </div>
                       </Badge>
-                      <Link to={`/orders/${order._id}`}>
+                      <Link to={`/orders/${order._id || order.id}`}>
                         <Button variant="outline" size="sm">
                           View Details
                           <ChevronRight className="w-4 h-4 ml-1" />
