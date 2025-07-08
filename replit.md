@@ -111,6 +111,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 08, 2025 - Stock Management & Order History Implementation
+- **Stock Quantity Reduction**: Automatically reduces product stock when orders are placed successfully
+- **Order History Pages**: Complete order management with orders list and detailed order view pages  
+- **Database Architecture Simplification**: Converted all schemas to use string IDs consistently, eliminating ObjectId casting errors
+- **Cart System Fix**: Resolved all ObjectId validation issues by using string references throughout
+- **Enhanced Order Creation**: Added stock reduction logic with proper inventory management
+- **User Experience**: Added order tracking, delivery estimates, and comprehensive order details
+- **Navigation Enhancement**: Orders accessible via user dropdown menu for authenticated users
+
 ### January 07, 2025 - Complete Payment System Resolution
 - **Payment System Fix**: Completely resolved ObjectId casting errors in order creation by fixing product ID mapping
 - **Database Schema Optimization**: Updated convertDoc function to use existing `id` field from database instead of converting `_id`

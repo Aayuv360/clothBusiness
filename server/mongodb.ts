@@ -586,16 +586,19 @@ export class MongoStorage implements IStorage {
     const order = await Order.findById(id);
     if (!order) return undefined;
 
-    const orderItems = await OrderItem.find({ orderId: id }).populate(
-      "productId",
-    );
-    const items = orderItems.map((item) => {
-      const converted = convertDoc<OrderItemType>(item);
-      return {
-        ...converted,
-        product: convertDoc<ProductType>(item.productId),
-      };
-    });
+    const orderItems = await OrderItem.find({ orderId: id });
+    
+    // Manual join with products using string ID
+    const items = [];
+    for (const orderItem of orderItems) {
+      const product = await Product.findOne({ id: orderItem.productId });
+      if (product) {
+        items.push({
+          ...convertDoc<OrderItemType>(orderItem),
+          product: convertDoc<ProductType>(product),
+        });
+      }
+    }
 
     return {
       ...convertDoc<OrderType>(order),
@@ -610,10 +613,29 @@ export class MongoStorage implements IStorage {
     const order = new Order(orderData);
     await order.save();
 
-    const orderItems = items.map((item) => ({
-      ...item,
-      orderId: order._id,
-    }));
+    // Create order items and reduce stock quantities
+    const orderItems = [];
+    for (const item of items) {
+      // Reduce stock quantity for each product
+      const product = await Product.findOne({ id: item.productId });
+      if (product) {
+        const newStockQuantity = Math.max(0, product.stockQuantity - item.quantity);
+        await Product.updateOne(
+          { id: item.productId },
+          { 
+            stockQuantity: newStockQuantity,
+            updatedAt: new Date()
+          }
+        );
+        console.log(`Stock reduced for product ${item.productId}: ${product.stockQuantity} → ${newStockQuantity}`);
+      }
+
+      orderItems.push({
+        ...item,
+        orderId: order._id.toString(),
+      });
+    }
+    
     await OrderItem.insertMany(orderItems);
 
     return convertDoc<OrderType>(order);

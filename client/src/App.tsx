@@ -15,6 +15,8 @@ import Auth from "@/pages/auth";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import ProductDetail from "./pages/product-detail";
+import Orders from "./pages/orders";
+import OrderDetail from "./pages/order-detail";
 
 function AppRouter() {
   const { checkAuth } = useAuth();
@@ -33,6 +35,8 @@ function AppRouter() {
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/orders/:id" element={<OrderDetail />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="*" element={<NotFound />} />
