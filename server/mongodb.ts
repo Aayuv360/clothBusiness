@@ -491,10 +491,18 @@ export class MongoStorage implements IStorage {
   }
 
   async addToCart(cartData: InsertCartItem): Promise<CartItemType> {
+    // Convert custom product ID to MongoDB ObjectId
+    const product = await Product.findOne({ id: cartData.productId });
+    if (!product) {
+      throw new Error("Product not found");
+    }
+    
+    const mongoProductId = product._id;
+    
     // Check if item already exists in cart
     const existingItem = await CartItem.findOne({
       userId: cartData.userId,
-      productId: cartData.productId,
+      productId: mongoProductId,
     });
 
     if (existingItem) {
@@ -503,7 +511,10 @@ export class MongoStorage implements IStorage {
       return convertDoc<CartItemType>(existingItem);
     }
 
-    const cartItem = new CartItem(cartData);
+    const cartItem = new CartItem({
+      ...cartData,
+      productId: mongoProductId, // Use MongoDB ObjectId
+    });
     await cartItem.save();
     return convertDoc<CartItemType>(cartItem);
   }
