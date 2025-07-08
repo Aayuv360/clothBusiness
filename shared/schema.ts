@@ -157,7 +157,7 @@ export const insertAddressSchema = z.object({
 
 export const insertCartSchema = z.object({
   userId: z.string().min(1),
-  productId: z.string().min(1),
+  productId: z.string(),
   quantity: z.number().default(1),
 });
 

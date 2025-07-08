@@ -64,7 +64,7 @@ export async function connectDB() {
 function convertDoc<T>(doc: any): T {
   if (!doc) return doc;
   const converted = doc.toObject ? doc.toObject() : doc;
-  
+
   // If document has an existing id field, use that and convert to string
   if (converted.id !== undefined) {
     converted.id = converted.id.toString();
@@ -72,11 +72,11 @@ function convertDoc<T>(doc: any): T {
     // Fallback to _id if no id field exists
     converted.id = converted._id.toString();
   }
-  
+
   // Clean up MongoDB fields
   delete converted._id;
   delete converted.__v;
-  
+
   return converted;
 }
 
@@ -491,15 +491,13 @@ export class MongoStorage implements IStorage {
   }
 
   async addToCart(cartData: InsertCartItem): Promise<CartItemType> {
-    // Convert custom product ID to MongoDB ObjectId
     const product = await Product.findOne({ id: cartData.productId });
     if (!product) {
       throw new Error("Product not found");
     }
-    
-    const mongoProductId = product._id;
-    
-    // Check if item already exists in cart
+
+    const mongoProductId = product.id;
+
     const existingItem = await CartItem.findOne({
       userId: cartData.userId,
       productId: mongoProductId,
