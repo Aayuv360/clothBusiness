@@ -44,8 +44,8 @@ export default function CategoryPage() {
     min: searchParams.get("minPrice") || "",
     max: searchParams.get("maxPrice") || "",
   });
-  const [selectedFabric, setSelectedFabric] = useState(searchParams.get("fabric") || "");
-  const [selectedColor, setSelectedColor] = useState(searchParams.get("color") || "");
+  const [selectedFabric, setSelectedFabric] = useState(searchParams.get("fabric") || "all");
+  const [selectedColor, setSelectedColor] = useState(searchParams.get("color") || "all");
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "newest");
   const [inStockOnly, setInStockOnly] = useState(searchParams.get("inStock") === "true");
 
@@ -60,8 +60,8 @@ export default function CategoryPage() {
     const params = new URLSearchParams();
     if (priceRange.min) params.set("minPrice", priceRange.min);
     if (priceRange.max) params.set("maxPrice", priceRange.max);
-    if (selectedFabric) params.set("fabric", selectedFabric);
-    if (selectedColor) params.set("color", selectedColor);
+    if (selectedFabric && selectedFabric !== "all") params.set("fabric", selectedFabric);
+    if (selectedColor && selectedColor !== "all") params.set("color", selectedColor);
     if (sortBy !== "newest") params.set("sort", sortBy);
     if (inStockOnly) params.set("inStock", "true");
     
@@ -94,8 +94,8 @@ export default function CategoryPage() {
 
   const clearFilters = () => {
     setPriceRange({ min: "", max: "" });
-    setSelectedFabric("");
-    setSelectedColor("");
+    setSelectedFabric("all");
+    setSelectedColor("all");
     setSortBy("newest");
     setInStockOnly(false);
   };
@@ -103,8 +103,8 @@ export default function CategoryPage() {
   const activeFiltersCount = [
     priceRange.min,
     priceRange.max,
-    selectedFabric,
-    selectedColor,
+    selectedFabric && selectedFabric !== "all" ? selectedFabric : null,
+    selectedColor && selectedColor !== "all" ? selectedColor : null,
     inStockOnly,
   ].filter(Boolean).length;
 
@@ -146,7 +146,7 @@ export default function CategoryPage() {
             <SelectValue placeholder="All Fabrics" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Fabrics</SelectItem>
+            <SelectItem value="all">All Fabrics</SelectItem>
             {fabrics.map((fabric) => (
               <SelectItem key={fabric} value={fabric.toLowerCase()}>
                 {fabric}
@@ -166,7 +166,7 @@ export default function CategoryPage() {
             <SelectValue placeholder="All Colors" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Colors</SelectItem>
+            <SelectItem value="all">All Colors</SelectItem>
             {colors.map((color) => (
               <SelectItem key={color} value={color.toLowerCase()}>
                 {color}

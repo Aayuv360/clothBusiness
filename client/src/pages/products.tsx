@@ -42,13 +42,13 @@ export default function Products() {
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "all");
   const [priceRange, setPriceRange] = useState({
     min: searchParams.get("minPrice") || "",
     max: searchParams.get("maxPrice") || "",
   });
-  const [selectedFabric, setSelectedFabric] = useState(searchParams.get("fabric") || "");
-  const [selectedColor, setSelectedColor] = useState(searchParams.get("color") || "");
+  const [selectedFabric, setSelectedFabric] = useState(searchParams.get("fabric") || "all");
+  const [selectedColor, setSelectedColor] = useState(searchParams.get("color") || "all");
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "newest");
   const [inStockOnly, setInStockOnly] = useState(searchParams.get("inStock") === "true");
 
@@ -62,11 +62,11 @@ export default function Products() {
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchQuery) params.set("search", searchQuery);
-    if (selectedCategory) params.set("category", selectedCategory);
+    if (selectedCategory && selectedCategory !== "all") params.set("category", selectedCategory);
     if (priceRange.min) params.set("minPrice", priceRange.min);
     if (priceRange.max) params.set("maxPrice", priceRange.max);
-    if (selectedFabric) params.set("fabric", selectedFabric);
-    if (selectedColor) params.set("color", selectedColor);
+    if (selectedFabric && selectedFabric !== "all") params.set("fabric", selectedFabric);
+    if (selectedColor && selectedColor !== "all") params.set("color", selectedColor);
     if (sortBy !== "newest") params.set("sort", sortBy);
     if (inStockOnly) params.set("inStock", "true");
     
@@ -88,21 +88,21 @@ export default function Products() {
 
   const clearFilters = () => {
     setSearchQuery("");
-    setSelectedCategory("");
+    setSelectedCategory("all");
     setPriceRange({ min: "", max: "" });
-    setSelectedFabric("");
-    setSelectedColor("");
+    setSelectedFabric("all");
+    setSelectedColor("all");
     setSortBy("newest");
     setInStockOnly(false);
   };
 
   const activeFiltersCount = [
     searchQuery,
-    selectedCategory,
+    selectedCategory && selectedCategory !== "all" ? selectedCategory : null,
     priceRange.min,
     priceRange.max,
-    selectedFabric,
-    selectedColor,
+    selectedFabric && selectedFabric !== "all" ? selectedFabric : null,
+    selectedColor && selectedColor !== "all" ? selectedColor : null,
     inStockOnly,
   ].filter(Boolean).length;
 
@@ -137,7 +137,7 @@ export default function Products() {
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value="all">All Categories</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category._id} value={category.slug}>
                 {category.name}
@@ -178,7 +178,7 @@ export default function Products() {
             <SelectValue placeholder="All Fabrics" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Fabrics</SelectItem>
+            <SelectItem value="all">All Fabrics</SelectItem>
             {fabrics.map((fabric) => (
               <SelectItem key={fabric} value={fabric.toLowerCase()}>
                 {fabric}
@@ -198,7 +198,7 @@ export default function Products() {
             <SelectValue placeholder="All Colors" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Colors</SelectItem>
+            <SelectItem value="all">All Colors</SelectItem>
             {colors.map((color) => (
               <SelectItem key={color} value={color.toLowerCase()}>
                 {color}

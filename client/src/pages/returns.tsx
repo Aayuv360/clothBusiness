@@ -251,16 +251,21 @@ export default function Returns() {
                     Select Order
                   </label>
                   <Select 
-                    value={selectedOrder?._id || ""} 
+                    value={selectedOrder?._id || "none"} 
                     onValueChange={(value) => {
-                      const order = eligibleOrders.find((o: Order) => o._id === value);
-                      setSelectedOrder(order || null);
+                      if (value === "none") {
+                        setSelectedOrder(null);
+                      } else {
+                        const order = eligibleOrders.find((o: Order) => o._id === value);
+                        setSelectedOrder(order || null);
+                      }
                     }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose an order" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="none">Select an order</SelectItem>
                       {eligibleOrders.map((order: Order) => (
                         <SelectItem key={order._id} value={order._id}>
                           Order #{order.orderNumber} - ₹{order.total}
