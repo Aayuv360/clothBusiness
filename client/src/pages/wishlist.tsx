@@ -273,7 +273,7 @@ export default function Wishlist() {
               <CardContent className="p-0">
                 <div className="relative">
                   {/* Product Image */}
-                  <Link href={`/product/${item.product.id}`}>
+                  <Link to={`/products/${item.product.id}`}>
                     <img
                       src={item.product.images[0]}
                       alt={item.product.name}
@@ -319,7 +319,7 @@ export default function Wishlist() {
 
                 <div className="p-4">
                   {/* Product Info */}
-                  <Link href={`/product/${item.product.id}`}>
+                  <Link to={`/products/${item.product.id}`}>
                     <h3 className="font-semibold text-charcoal mb-2 hover:text-golden cursor-pointer line-clamp-2">
                       {item.product.name}
                     </h3>

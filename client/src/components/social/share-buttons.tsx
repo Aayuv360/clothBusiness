@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Share2, Facebook, Twitter, Instagram, MessageCircle, Copy, Check } from "lucide-react";
+import {
+  Share2,
+  Facebook,
+  Twitter,
+  Instagram,
+  MessageCircle,
+  Copy,
+  Check,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -22,58 +30,59 @@ interface ShareButtonsProps {
   description?: string;
 }
 
-export default function ShareButtons({ 
-  product, 
-  url = window.location.href, 
+export default function ShareButtons({
+  product,
+  url = window.location.href,
   title = "Check out this amazing saree!",
-  description = "Beautiful sarees at great prices"
+  description = "Beautiful sarees at great prices",
 }: ShareButtonsProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
-  const shareUrl = product 
-    ? `${window.location.origin}/product/${product.id}`
+  const shareUrl = product
+    ? `${window.location.origin}/products/${product.id}`
     : url;
-    
-  const shareTitle = product 
+
+  const shareTitle = product
     ? `${product.name} - Only ₹${product.price}`
     : title;
-    
+
   const shareDescription = product
     ? `Check out this beautiful ${product.name} for just ₹${product.price}! Shop now at our saree collection.`
     : description;
 
-  const shareImage = product?.imageUrl || '';
+  const shareImage = product?.imageUrl || "";
 
   const handleShare = async (platform: string) => {
-    let shareLink = '';
-    
+    let shareLink = "";
+
     switch (platform) {
-      case 'facebook':
+      case "facebook":
         shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareTitle)}`;
         break;
-      case 'twitter':
+      case "twitter":
         shareLink = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}&hashtags=saree,fashion,shopping`;
         break;
-      case 'whatsapp':
+      case "whatsapp":
         shareLink = `https://wa.me/?text=${encodeURIComponent(`${shareTitle} - ${shareUrl}`)}`;
         break;
-      case 'instagram':
+      case "instagram":
         toast({
           title: "Instagram sharing",
-          description: "Copy the link and share manually on Instagram Stories or posts.",
+          description:
+            "Copy the link and share manually on Instagram Stories or posts.",
         });
         handleCopyLink();
         return;
-      case 'copy':
+      case "copy":
         handleCopyLink();
         return;
       default:
         return;
     }
-    
+
     if (shareLink) {
-      window.open(shareLink, '_blank', 'width=600,height=400');
+      window.open(shareLink, "_blank", "width=600,height=400");
     }
   };
 
@@ -105,7 +114,7 @@ export default function ShareButtons({
         });
       } catch (error) {
         // User cancelled or error occurred
-        console.log('Native share cancelled or failed');
+        console.log("Native share cancelled or failed");
       }
     } else {
       // Fallback to dropdown menu
@@ -136,44 +145,44 @@ export default function ShareButtons({
             <DropdownMenuSeparator />
           </>
         )}
-        
+
         {/* Social Media Platforms */}
         <DropdownMenuItem
-          onClick={() => handleShare('whatsapp')}
+          onClick={() => handleShare("whatsapp")}
           className="gap-2 cursor-pointer"
         >
           <MessageCircle className="w-4 h-4 text-green-600" />
           WhatsApp
         </DropdownMenuItem>
-        
+
         <DropdownMenuItem
-          onClick={() => handleShare('facebook')}
+          onClick={() => handleShare("facebook")}
           className="gap-2 cursor-pointer"
         >
           <Facebook className="w-4 h-4 text-blue-600" />
           Facebook
         </DropdownMenuItem>
-        
+
         <DropdownMenuItem
-          onClick={() => handleShare('twitter')}
+          onClick={() => handleShare("twitter")}
           className="gap-2 cursor-pointer"
         >
           <Twitter className="w-4 h-4 text-sky-500" />
           Twitter
         </DropdownMenuItem>
-        
+
         <DropdownMenuItem
-          onClick={() => handleShare('instagram')}
+          onClick={() => handleShare("instagram")}
           className="gap-2 cursor-pointer"
         >
           <Instagram className="w-4 h-4 text-pink-600" />
           Instagram
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator />
-        
+
         <DropdownMenuItem
-          onClick={() => handleShare('copy')}
+          onClick={() => handleShare("copy")}
           className="gap-2 cursor-pointer"
         >
           {copied ? (
@@ -181,7 +190,7 @@ export default function ShareButtons({
           ) : (
             <Copy className="w-4 h-4" />
           )}
-          {copied ? 'Copied!' : 'Copy Link'}
+          {copied ? "Copied!" : "Copy Link"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -193,28 +202,28 @@ export function useSocialShare() {
   const { toast } = useToast();
 
   const shareProduct = async (product: any, platform?: string) => {
-    const url = `${window.location.origin}/product/${product.id}`;
+    const url = `${window.location.origin}/products/${product.id}`;
     const title = `${product.name} - Only ₹${product.price}`;
     const description = `Check out this beautiful ${product.name}! Shop now at our exclusive saree collection.`;
 
     if (platform) {
       // Direct share to specific platform
-      let shareLink = '';
-      
+      let shareLink = "";
+
       switch (platform) {
-        case 'whatsapp':
+        case "whatsapp":
           shareLink = `https://wa.me/?text=${encodeURIComponent(`${title} - ${url}`)}`;
           break;
-        case 'facebook':
+        case "facebook":
           shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
           break;
-        case 'twitter':
+        case "twitter":
           shareLink = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
           break;
       }
-      
+
       if (shareLink) {
-        window.open(shareLink, '_blank', 'width=600,height=400');
+        window.open(shareLink, "_blank", "width=600,height=400");
       }
     } else if (navigator.share) {
       // Use native share API
@@ -225,7 +234,7 @@ export function useSocialShare() {
           url,
         });
       } catch (error) {
-        console.log('Share cancelled');
+        console.log("Share cancelled");
       }
     } else {
       // Fallback: copy to clipboard

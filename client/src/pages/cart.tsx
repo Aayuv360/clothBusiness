@@ -96,7 +96,7 @@ export default function Cart() {
                   <div className="flex flex-col sm:flex-row gap-6">
                     {/* Product Image */}
                     <div className="flex-shrink-0">
-                      <Link href={`/product/${item?.product?.id}`}>
+                      <Link to={`/products/${item?.product?.id}`}>
                         <img
                           src={item?.product?.images[0]}
                           alt={item?.product?.name}
@@ -107,7 +107,7 @@ export default function Cart() {
 
                     {/* Product Details */}
                     <div className="flex-1 min-w-0">
-                      <Link href={`/product/${item?.product?.id}`}>
+                      <Link to={`/products/${item?.product?.id}`}>
                         <h3 className="text-lg font-semibold text-charcoal mb-2 hover:text-golden cursor-pointer line-clamp-2">
                           {item?.product?.name}
                         </h3>

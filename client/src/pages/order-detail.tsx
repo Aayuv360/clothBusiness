@@ -157,7 +157,9 @@ export default function OrderDetail() {
                 </div>
               </div>
             </div>
-            <Badge className={`${getStatusColor(order.status)} text-base px-4 py-2`}>
+            <Badge
+              className={`${getStatusColor(order.status)} text-base px-4 py-2`}
+            >
               <div className="flex items-center gap-2">
                 {getStatusIcon(order.status)}
                 <span className="capitalize">{order.status}</span>
@@ -175,17 +177,22 @@ export default function OrderDetail() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {order.items?.map((item) => (
-                  <div key={item.id} className="flex gap-4 pb-4 border-b last:border-b-0">
+                  <div
+                    key={item.id}
+                    className="flex gap-4 pb-4 border-b last:border-b-0"
+                  >
                     <div className="flex-shrink-0">
                       <img
-                        src={item.product.images?.[0] || "/placeholder-product.jpg"}
+                        src={
+                          item.product.images?.[0] || "/placeholder-product.jpg"
+                        }
                         alt={item.product.name}
                         className="w-16 h-16 object-cover rounded-lg"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
                       <Link
-                        to={`/product/${item.product.id}`}
+                        to={`/products/${item.product.id}`}
                         className="font-medium text-gray-900 dark:text-white hover:text-golden line-clamp-2"
                       >
                         {item.product.name}
@@ -217,12 +224,22 @@ export default function OrderDetail() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
-                  <span>₹{(parseFloat(order.total) - parseFloat(order.shippingCost || "0")).toString()}</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Subtotal
+                  </span>
+                  <span>
+                    ₹
+                    {(
+                      parseFloat(order.total) -
+                      parseFloat(order.shippingCost || "0")
+                    ).toString()}
+                  </span>
                 </div>
                 {order.shippingCost && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Shipping</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Shipping
+                    </span>
                     <span>₹{order.shippingCost}</span>
                   </div>
                 )}
@@ -241,13 +258,21 @@ export default function OrderDetail() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Method</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Method
+                  </span>
                   <span className="capitalize">{order.paymentMethod}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Status</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Status
+                  </span>
                   <Badge
-                    variant={order.paymentStatus === "completed" ? "default" : "secondary"}
+                    variant={
+                      order.paymentStatus === "completed"
+                        ? "default"
+                        : "secondary"
+                    }
                   >
                     {order.paymentStatus}
                   </Badge>
@@ -277,7 +302,8 @@ export default function OrderDetail() {
                     </p>
                   )}
                   <p className="text-gray-600 dark:text-gray-400">
-                    {order.shippingAddress?.city}, {order.shippingAddress?.state} -{" "}
+                    {order.shippingAddress?.city},{" "}
+                    {order.shippingAddress?.state} -{" "}
                     {order.shippingAddress?.pincode}
                   </p>
                   <p className="text-gray-600 dark:text-gray-400">
